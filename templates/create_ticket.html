@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Ticket</title>
+</head>
+<body>
+    <h1>Crear un nuevo ticket</h1>
+    <form action="/create-ticket" method="POST">
+        <label for="tipo">Tipo de problema:</label><br>
+        <select name="tipo" id="tipo">
+            <option value="Conexión">Conexión</option>
+            <option value="Velocidad">Velocidad</option>
+            <option value="Corte de servicio">Corte de servicio</option>
+        </select><br><br>
+
+        <label for="descripcion">Descripción:</label><br>
+        <textarea name="descripcion" id="descripcion" rows="4" cols="50" required></textarea><br><br>
+
+        <label for="prioridad">Prioridad:</label><br>
+        <select name="prioridad" id="prioridad">
+            <option value="Baja">Baja</option>
+            <option value="Media">Media</option>
+            <option value="Alta">Alta</option>
+        </select><br><br>
+
+        <label for="usuario">Usuario creador:</label><br>
+        <input type="text" name="usuario" id="usuario" required><br><br>
+
+        <button type="submit">Crear Ticket</button>
+    </form>
+</body>
+</html>

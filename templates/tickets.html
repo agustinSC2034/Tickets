@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Tickets</title>
+</head>
+<body>
+    <h1>Lista de Tickets</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Fecha de Creación</th>
+                <th>Usuario Creador</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket['id'] }}</td>
+                <td>{{ ticket['tipo'] }}</td>
+                <td>{{ ticket['descripcion'] }}</td>
+                <td>{{ ticket['prioridad'] }}</td>
+                <td>{{ ticket['estado'] }}</td>
+                <td>{{ ticket['fecha_creacion'] }}</td>
+                <td>{{ ticket['usuario_creador'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
