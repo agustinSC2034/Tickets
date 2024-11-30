@@ -9,3 +9,16 @@ CREATE TABLE IF NOT EXISTS tickets (
     notas TEXT,
     archivo TEXT
 );
+
+CREATE TABLE IF NOT EXISTS historial (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticket_id INTEGER NOT NULL,
+    accion TEXT NOT NULL,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ticket_id) REFERENCES tickets (id)
+);
+
+
+ALTER TABLE tickets ADD COLUMN notas TEXT;
+
+

@@ -1,12 +1,36 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Tickets</title>
 </head>
+
 <body>
     <h1>Lista de Tickets</h1>
+
+    <!-- Filtros -->
+    <form action="/tickets" method="GET">
+        <label for="estado">Estado:</label>
+        <select name="estado" id="estado">
+            <option value="" {% if not estado %}selected{% endif %}>Todos</option>
+            <option value="pendiente" {% if estado=='pendiente' %}selected{% endif %}>Pendiente</option>
+            <option value="en proceso" {% if estado=='en proceso' %}selected{% endif %}>En proceso</option>
+            <option value="resuelto" {% if estado=='resuelto' %}selected{% endif %}>Resuelto</option>
+        </select>
+
+        <label for="prioridad">Prioridad:</label>
+        <select name="prioridad" id="prioridad">
+            <option value="" {% if not prioridad %}selected{% endif %}>Todas</option>
+            <option value="Baja" {% if prioridad=='Baja' %}selected{% endif %}>Baja</option>
+            <option value="Media" {% if prioridad=='Media' %}selected{% endif %}>Media</option>
+            <option value="Alta" {% if prioridad=='Alta' %}selected{% endif %}>Alta</option>
+        </select>
+
+        <button type="submit">Filtrar</button>
+    </form>
+
     <table border="1">
         <thead>
             <tr>
@@ -17,6 +41,7 @@
                 <th>Estado</th>
                 <th>Fecha de Creación</th>
                 <th>Usuario Creador</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -29,9 +54,46 @@
                 <td>{{ ticket['estado'] }}</td>
                 <td>{{ ticket['fecha_creacion'] }}</td>
                 <td>{{ ticket['usuario_creador'] }}</td>
+                <td>
+                    <form action="/update-ticket/{{ ticket['id'] }}" method="POST" style="display:inline;">
+                        <select name="nuevo_estado" required>
+                            <option value="pendiente" {% if ticket['estado']=='pendiente' %}selected{% endif %}>
+                                Pendiente</option>
+                            <option value="en proceso" {% if ticket['estado']=='en proceso' %}selected{% endif %}>En
+                                proceso</option>
+                            <option value="resuelto" {% if ticket['estado']=='resuelto' %}selected{% endif %}>Resuelto
+                            </option>
+                        </select>
+                        <button type="submit">Actualizar</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="/delete-ticket/{{ ticket['id'] }}" method="POST" style="display:inline;">
+                        <button type="submit"
+                            onclick="return confirm('¿Estás seguro de que deseas eliminar este ticket?')">Eliminar</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="/assign-ticket/{{ ticket['id'] }}" method="POST" style="display:inline;">
+                        <input type="text" name="usuario_asignado" placeholder="Asignar usuario" required>
+                        <button type="submit">Asignar</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="/add-note/{{ ticket['id'] }}" method="POST">
+                        <textarea name="nota" rows="3" cols="50" placeholder="Escribe una nota..." required></textarea>
+                        <button type="submit">Agregar Nota</button>
+                    </form>
+                    
+                </td>
+                
+
             </tr>
+            
             {% endfor %}
         </tbody>
+        <a href="/export-tickets" class="button">Exportar Tickets a CSV</a>
     </table>
 </body>
+
 </html>

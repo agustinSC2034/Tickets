@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Ticket</title>
+</head>
+<body>
+    <h1>Detalles del Ticket</h1>
+
+    <p><strong>ID:</strong> {{ ticket['id'] }}</p>
+    <p><strong>Tipo:</strong> {{ ticket['tipo'] }}</p>
+    <p><strong>Descripción:</strong> {{ ticket['descripcion'] }}</p>
+    <p><strong>Prioridad:</strong> {{ ticket['prioridad'] }}</p>
+    <p><strong>Estado:</strong> {{ ticket['estado'] }}</p>
+    <p><strong>Fecha de creación:</strong> {{ ticket['fecha_creacion'] }}</p>
+    <p><strong>Usuario creador:</strong> {{ ticket['usuario_creador'] }}</p>
+    <p><strong>Notas:</strong> {{ ticket['notas'] | default("Sin notas") }}</p>
+
+    <h2>Historial</h2>
+    {% if historial %}
+        <ul>
+            {% for evento in historial %}
+                <li>{{ evento['fecha'] }}: {{ evento['accion'] }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hay historial para este ticket.</p>
+    {% endif %}
+
+    <p><a href="/tickets">Volver a la lista de tickets</a></p>
+</body>
+</html>

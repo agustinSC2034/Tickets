@@ -7,9 +7,10 @@
 </head>
 <body>
     <h1>Crear un nuevo ticket</h1>
-    <form action="/create-ticket" method="POST">
+    <form action="/create-ticket" method="POST" onsubmit="return validarFormulario()">
         <label for="tipo">Tipo de problema:</label><br>
-        <select name="tipo" id="tipo">
+        <select name="tipo" id="tipo" required>
+            <option value="">Seleccione un tipo</option>
             <option value="Conexión">Conexión</option>
             <option value="Velocidad">Velocidad</option>
             <option value="Corte de servicio">Corte de servicio</option>
@@ -19,7 +20,8 @@
         <textarea name="descripcion" id="descripcion" rows="4" cols="50" required></textarea><br><br>
 
         <label for="prioridad">Prioridad:</label><br>
-        <select name="prioridad" id="prioridad">
+        <select name="prioridad" id="prioridad" required>
+            <option value="">Seleccione una prioridad</option>
             <option value="Baja">Baja</option>
             <option value="Media">Media</option>
             <option value="Alta">Alta</option>
@@ -30,5 +32,20 @@
 
         <button type="submit">Crear Ticket</button>
     </form>
+
+    <script>
+        function validarFormulario() {
+            const tipo = document.getElementById("tipo").value;
+            const descripcion = document.getElementById("descripcion").value.trim();
+            const prioridad = document.getElementById("prioridad").value;
+            const usuario = document.getElementById("usuario").value.trim();
+
+            if (!tipo || !descripcion || !prioridad || !usuario) {
+                alert("Por favor, complete todos los campos obligatorios.");
+                return false;
+            }
+            return true;
+        }
+    </script>
 </body>
 </html>
