@@ -1,7 +1,11 @@
+
 from flask import Flask, render_template, request
 import sqlite3
 import csv
 from flask import Response
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 app = Flask(__name__)
 
@@ -154,6 +158,11 @@ def add_note(id):
 
     return f"Nota agregada exitosamente. <a href='/ticket/{id}'>Volver al ticket</a>"
 
+
+# Configurar Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'  # Redirige a esta vista si el usuario no está autenticado
 
 
 

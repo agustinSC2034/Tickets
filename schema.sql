@@ -21,4 +21,12 @@ CREATE TABLE IF NOT EXISTS historial (
 
 ALTER TABLE tickets ADD COLUMN notas TEXT;
 
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL -- Puede ser 'directv' o 'usittel'
+);
+
+
 
