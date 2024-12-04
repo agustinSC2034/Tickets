@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registrar Usuario</title>
+</head>
+<body>
+    <h1>Registrar Usuario</h1>
+    <form method="POST">
+        <label for="username">Nombre de usuario:</label>
+        <input type="text" id="username" name="username" required>
+        <br>
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <label for="role">Rol:</label>
+        <select id="role" name="role" required>
+            <option value="usittel">Usittel</option>
+            <option value="directv">DirecTV</option>
+        </select>
+        <br>
+        <button type="submit">Registrar</button>
+    </form>
+    <a href="/tickets">Volver a la lista de tickets</a>
+</body>
+</html>

@@ -76,11 +76,11 @@ def create_ticket():
         tipo = request.form.get('tipo')
         descripcion = request.form.get('descripcion')
         prioridad = request.form.get('prioridad')
-        usuario = request.form.get('usuario')
+        usuario = current_user.username
 
         # Validación
-        if not tipo or not descripcion or not prioridad or not usuario:
-            return "Error: Todos los campos son obligatorios.", 400
+        if not tipo or not descripcion or not prioridad:
+            return "Todos los campos son obligatorios", 400
 
         # Guarda en la base de datos
         conn = get_db_connection()
@@ -91,7 +91,7 @@ def create_ticket():
         conn.commit()
         conn.close()
 
-        return "Ticket creado exitosamente"  # Mensaje temporal
+        return redirect('/tickets')
     return render_template('create_ticket.html')
 
 
@@ -113,47 +113,58 @@ def tickets():
         params.append(prioridad)
 
     conn = get_db_connection()
-    tickets = conn.execute(query, params).fetchall()
+    tickets = conn.execute('SELECT * FROM tickets').fetchall()
     conn.close()
+    return render_template('tickets.html', tickets=tickets)
 
-    return render_template('tickets.html', tickets=tickets, estado=estado, prioridad=prioridad)
+
 
 @app.route('/update-ticket/<int:id>', methods=['POST'])
+@login_required
 def update_ticket(id):
     nuevo_estado = request.form.get('nuevo_estado')
 
     if not nuevo_estado:
-        return "Error: El estado es obligatorio.", 400
+        return "El estado es obligatorio", 400
 
     conn = get_db_connection()
-    try:
-        conn.execute(
-            'UPDATE tickets SET estado = ? WHERE id = ?',
-            (nuevo_estado, id)
-        )
-        conn.execute(
-            'INSERT INTO historial (ticket_id, accion) VALUES (?, ?)',
-            (id, f"Cambio de estado a '{nuevo_estado}'")
-        )
-        conn.commit()
-    finally:
-        conn.close()
+    ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
 
-    return "Estado actualizado exitosamente. <a href='/tickets'>Volver a la lista de tickets</a>"
+    if not ticket:
+        conn.close()
+        return "El ticket no existe", 404
+
+    # Restricción para DirecTV: No puede modificar tickets marcados como resueltos por Usittel
+    if current_user.role == 'directv' and ticket['estado'] == 'resuelto':
+        conn.close()
+        return "No puedes editar un ticket marcado como resuelto", 403
+
+    conn.execute(
+        'UPDATE tickets SET estado = ? WHERE id = ?',
+        (nuevo_estado, id)
+    )
+    conn.commit()
+    conn.close()
+
+    return redirect('/tickets')
+
 
 
 
 
 # Ruta para eliminar tickets
 @app.route('/delete-ticket/<int:id>', methods=['POST'])
+@login_required
 def delete_ticket(id):
+    if current_user.role != 'usittel':
+        return "Acceso denegado", 403
+
     conn = get_db_connection()
-    try:
-        conn.execute('DELETE FROM tickets WHERE id = ?', (id,))
-        conn.commit()
-    finally:
-        conn.close()
-    return "Ticket eliminado exitosamente. <a href='/tickets'>Volver a la lista de tickets</a>"
+    conn.execute('DELETE FROM tickets WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return redirect('/tickets')
+
 
 
 
@@ -207,6 +218,55 @@ def add_note(id):
     return f"Nota agregada exitosamente. <a href='/ticket/{id}'>Volver al ticket</a>"
 
 
+# Ruta para crear usuarios
+@app.route('/register', methods=['GET', 'POST'])
+@login_required
+def register():
+    # Solo los administradores (Usittel) pueden registrar usuarios
+    if current_user.role != 'usittel':
+        return "Acceso denegado", 403
+
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        role = request.form.get('role')
+
+        # Validaciones básicas
+        if not username or not password or not role:
+            return "Todos los campos son obligatorios", 400
+
+        conn = get_db_connection()
+        user_exists = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        
+        if user_exists:
+            conn.close()
+            return "El usuario ya existe. Por favor, elige otro nombre.", 400  # Aquí puedes personalizar la respuesta para que sea más visual en el formulario
+
+        # Generar el hash de la contraseña
+        hashed_password = generate_password_hash(password)
+
+        # Guardar en la base de datos
+        conn.execute(
+            'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+            (username, hashed_password, role)
+        )
+        conn.commit()
+        conn.close()
+
+        return redirect('/tickets')  # Redirige a la lista de tickets después de registrar
+
+    return render_template('register.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/login')  # Redirige al formulario de inicio de sesión
+
+
+
+# Exportar tickets
 @app.route('/export-tickets', methods=['GET'])
 def export_tickets():
     import io

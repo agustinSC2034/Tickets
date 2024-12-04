@@ -47,10 +47,18 @@ Ruta: http://127.0.0.1:5000/login
 Descripción: Ruta de inicio de sesion
 
 
+.\venv\Scripts\Activate
+python app.py
 
 
 sqlite3 database.db
 .tables
 
-nuevo_admin admin
-32768:8:1$m35Zk1YTlnaA3eAw$162ccce8adde944b4c811ad23b9880e3327a1b9db3257eb96f0797cb6e6784af1367041ac17a239367aab6fb098512758bdcaacf09f610dd18d19499a043bbd4
+nuevo_admin
+inception
+
+agustin
+scutari
+
+userdtv
+userdtv
