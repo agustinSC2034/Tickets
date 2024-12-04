@@ -1,13 +1,12 @@
-
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import sqlite3
 import csv
 from flask import Response
+from flask_login import login_user
+from werkzeug.security import check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
-
-app = Flask(__name__)
 
 # Conexión a la base de datos
 def get_db_connection():
@@ -15,11 +14,60 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+# Inicializa Flask
+app = Flask(__name__)
+app.secret_key = 'inception'  # Agrega esta línea para habilitar sesiones seguras
+
+
+# Configurar Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'  # Redirige a /login si no estás autenticado
+
+
+# Clase User para manejar la autenticación
+class User(UserMixin):
+    def __init__(self, id, username, role):
+        self.id = id
+        self.username = username
+        self.role = role
+
+# Función para cargar el usuario desde la base de datos
+@login_manager.user_loader
+def load_user(user_id):
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn.close()
+
+    if user:
+        return User(id=user['id'], username=user['username'], role=user['role'])
+    return None
+
+
 
 # Ruta principal
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        conn.close()
+
+        if user and check_password_hash(user['password'], password):
+            login_user(User(id=user['id'], username=user['username'], role=user['role']))
+            return redirect('/tickets')  # Redirige a la lista de tickets después de iniciar sesión
+        return "Usuario o contraseña incorrectos"
+
+    return render_template('login.html')
+
+
 
 # Ruta para crear tickets
 @app.route('/create-ticket', methods=['GET', 'POST'])
@@ -157,13 +205,6 @@ def add_note(id):
         conn.close()
 
     return f"Nota agregada exitosamente. <a href='/ticket/{id}'>Volver al ticket</a>"
-
-
-# Configurar Flask-Login
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'  # Redirige a esta vista si el usuario no está autenticado
-
 
 
 @app.route('/export-tickets', methods=['GET'])

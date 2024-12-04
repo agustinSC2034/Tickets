@@ -1,2 +1,56 @@
 .\venv\Scripts\Activate
 python app.py
+
+
+¡Buen día! Claro, aquí tienes una lista de las rutas que tienes actualmente en tu aplicación, según el código que compartiste:
+
+Rutas principales
+Página principal (Inicio):
+
+Ruta: http://127.0.0.1:5000/
+Descripción: Muestra la página de inicio (actualmente definida como index.html).
+Lista de tickets:
+
+Ruta: http://127.0.0.1:5000/tickets
+Descripción: Muestra todos los tickets en formato de tabla. Permite filtrar por estado y prioridad.
+Crear un nuevo ticket:
+
+Ruta: http://127.0.0.1:5000/create-ticket
+Descripción: Muestra el formulario para crear un nuevo ticket.
+Exportar tickets a CSV:
+
+Ruta: http://127.0.0.1:5000/export-tickets
+Descripción: Descarga un archivo CSV con los datos de los tickets existentes.
+Rutas relacionadas con tickets individuales
+Detalles de un ticket:
+
+Ruta: http://127.0.0.1:5000/ticket/<id>
+Descripción: Muestra los detalles de un ticket específico, incluyendo su historial.
+Actualizar el estado de un ticket:
+
+Ruta: http://127.0.0.1:5000/update-ticket/<id>
+Descripción: Permite actualizar el estado de un ticket (por ejemplo, de "pendiente" a "en proceso").
+Eliminar un ticket:
+
+Ruta: http://127.0.0.1:5000/delete-ticket/<id>
+Descripción: Elimina un ticket específico de la base de datos.
+Asignar un usuario a un ticket:
+
+Ruta: http://127.0.0.1:5000/assign-ticket/<id>
+Descripción: Permite asignar un usuario responsable a un ticket.
+Agregar una nota a un ticket:
+
+Ruta: http://127.0.0.1:5000/add-note/<id>
+Descripción: Agrega una nota al ticket correspondiente.
+
+Ruta: http://127.0.0.1:5000/login
+Descripción: Ruta de inicio de sesion
+
+
+
+
+sqlite3 database.db
+.tables
+
+nuevo_admin admin
+32768:8:1$m35Zk1YTlnaA3eAw$162ccce8adde944b4c811ad23b9880e3327a1b9db3257eb96f0797cb6e6784af1367041ac17a239367aab6fb098512758bdcaacf09f610dd18d19499a043bbd4
