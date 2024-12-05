@@ -49,10 +49,9 @@
                 <td>{{ ticket.tipo }}</td>
                 <td>{{ ticket.descripcion }}</td>
                 <td>{{ ticket.prioridad }}</td>
+                <td>{{ ticket.estado }}</td>
                 <td>
-                    {% if ticket.estado == 'cerrado' %}
-                        Ticket Cerrado
-                    {% elif current_user.role == 'usittel' %}
+                    {% if current_user.role == 'usittel' %}
                         <form action="/update-ticket/{{ ticket.id }}" method="POST" style="display:inline;">
                             <select name="nuevo_estado">
                                 <option value="pendiente" {% if ticket.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
@@ -61,26 +60,23 @@
                             </select>
                             <button type="submit">Actualizar</button>
                         </form>
-                    {% else %}
-                        {{ ticket.estado }}
                     {% endif %}
-                </td>
-                <td>
                     {% if ticket.estado != 'cerrado' and current_user.role == 'directv' %}
                         <form action="/close-ticket/{{ ticket.id }}" method="POST" style="display:inline;">
                             <button type="submit">Cerrar Ticket</button>
                         </form>
                     {% endif %}
-                    {% if current_user.role == 'usittel' %}
-                        <form action="/delete-ticket/{{ ticket.id }}" method="POST" style="display:inline;">
-                            <button type="submit">Eliminar</button>
-                        </form>
-                    {% endif %}
+                    <form action="/delete-ticket/{{ ticket.id }}" method="POST" style="display:inline;">
+                        <button type="submit">Eliminar</button>
+                    </form>
+                    <!-- Botón para ver el historial -->
+                    <a href="/ticket-history/{{ ticket.id }}" class="button">Ver Historial</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    
     
     <a href="/export-tickets" class="button">Exportar Tickets a CSV</a>
     <br><br>

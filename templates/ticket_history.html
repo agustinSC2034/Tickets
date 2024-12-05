@@ -1,0 +1,27 @@
+<h1>Historial del Ticket #{{ ticket.id }}</h1>
+<p><strong>Tipo:</strong> {{ ticket.tipo }}</p>
+<p><strong>Descripción:</strong> {{ ticket.descripcion }}</p>
+<p><strong>Estado:</strong> {{ ticket.estado }}</p>
+<p><strong>Usuario creador:</strong> {{ ticket.usuario_creador }}</p>
+
+<h2>Cambios realizados:</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Acción</th>
+            <th>Usuario</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cambio in historial %}
+        <tr>
+            <td>{{ cambio.fecha }}</td>
+            <td>{{ cambio.accion }}</td>
+            <td>{{ cambio.usuario }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="/tickets">Volver a la lista de tickets</a>

@@ -146,10 +146,18 @@ def update_ticket(id):
         conn.close()
         return "No se puede modificar un ticket cerrado", 403
 
+    # Actualizar estado
     conn.execute(
         'UPDATE tickets SET estado = ? WHERE id = ?',
         (nuevo_estado, id)
     )
+
+    # Registrar el cambio en el historial
+    conn.execute(
+        'INSERT INTO historial (ticket_id, accion, usuario) VALUES (?, ?, ?)',
+        (id, f"Cambio de estado a '{nuevo_estado}'", current_user.username)
+    )
+
     conn.commit()
     conn.close()
 
@@ -320,18 +328,40 @@ def close_ticket(id):
         conn.close()
         return "El ticket no existe", 404
 
-    # Solo DirecTV puede cerrar tickets y no si están resueltos o ya cerrados
     if current_user.role != 'directv' or ticket['estado'] in ['resuelto', 'cerrado']:
         conn.close()
         return "No puedes cerrar este ticket", 403
 
+    # Marcar el ticket como cerrado
     conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', ('cerrado', id))
+
+    # Registrar el cambio en el historial
+    conn.execute(
+        'INSERT INTO historial (ticket_id, accion, usuario) VALUES (?, ?, ?)',
+        (id, "Ticket cerrado", current_user.username)
+    )
+
     conn.commit()
     conn.close()
 
     return redirect('/tickets')
 
 
+@app.route('/ticket-history/<int:id>')
+@login_required
+def ticket_history(id):
+    conn = get_db_connection()
+    ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
+    historial = conn.execute(
+        'SELECT * FROM historial WHERE ticket_id = ? ORDER BY fecha DESC',
+        (id,)
+    ).fetchall()
+    conn.close()
+
+    if not ticket:
+        return "El ticket no existe", 404
+
+    return render_template('ticket_history.html', ticket=ticket, historial=historial)
 
 
 
