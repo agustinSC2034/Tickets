@@ -77,7 +77,7 @@ def create_ticket():
         tipo = request.form.get('tipo')
         descripcion = request.form.get('descripcion')
         prioridad = request.form.get('prioridad')
-        usuario_creador = current_user.username  # Asigna automáticamente el usuario autenticado
+        usuario = current_user.username  # El usuario creador es el usuario autenticado
 
         if not tipo or not descripcion or not prioridad:
             return "Todos los campos son obligatorios", 400
@@ -85,7 +85,7 @@ def create_ticket():
         conn = get_db_connection()
         conn.execute(
             'INSERT INTO tickets (tipo, descripcion, prioridad, usuario_creador) VALUES (?, ?, ?, ?)',
-            (tipo, descripcion, prioridad, usuario_creador)
+            (tipo, descripcion, prioridad, usuario)
         )
         conn.commit()
         conn.close()
@@ -93,6 +93,7 @@ def create_ticket():
         return redirect('/tickets')
 
     return render_template('create_ticket.html')
+
 
 
 
@@ -157,9 +158,6 @@ def update_ticket(id):
 
 
 
-
-
-
 # Ruta para eliminar tickets
 @app.route('/delete-ticket/<int:id>', methods=['POST'])
 @login_required
@@ -172,6 +170,7 @@ def delete_ticket(id):
     conn.commit()
     conn.close()
     return redirect('/tickets')
+
 
 
 
@@ -308,6 +307,8 @@ def export_tickets():
     response.headers.set('Content-Disposition', 'attachment', filename='tickets.csv')
     return response
 
+
+
 # Cerrar tickets de parte de Directv
 @app.route('/close-ticket/<int:id>', methods=['POST'])
 @login_required
@@ -319,17 +320,18 @@ def close_ticket(id):
         conn.close()
         return "El ticket no existe", 404
 
-    # Solo DirecTV puede cerrar tickets y no se pueden cerrar si ya están resueltos por Usittel
-    if current_user.role != 'directv' or ticket['estado'] == 'resuelto':
+    # Solo DirecTV puede cerrar tickets y no si están resueltos o ya cerrados
+    if current_user.role != 'directv' or ticket['estado'] in ['resuelto', 'cerrado']:
         conn.close()
         return "No puedes cerrar este ticket", 403
 
-    # Marcar el ticket como cerrado
     conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', ('cerrado', id))
     conn.commit()
     conn.close()
 
     return redirect('/tickets')
+
+
 
 
 
