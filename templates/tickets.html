@@ -68,6 +68,11 @@
                     </form>
                 </td>
                 <td>
+                    {% if current_user.role == 'directv' and ticket.estado != 'resuelto' %}
+                    <form action="/close-ticket/{{ ticket.id }}" method="POST" style="display:inline;">
+                        <button type="submit">Cerrar Ticket</button>
+                    </form>
+                    {% endif %}
                     <form action="/delete-ticket/{{ ticket['id'] }}" method="POST" style="display:inline;">
                         <button type="submit"
                             onclick="return confirm('¿Estás seguro de que deseas eliminar este ticket?')">Eliminar</button>
@@ -84,12 +89,12 @@
                         <textarea name="nota" rows="3" cols="50" placeholder="Escribe una nota..." required></textarea>
                         <button type="submit">Agregar Nota</button>
                     </form>
-                    
+
                 </td>
-                
+
 
             </tr>
-            
+
             {% endfor %}
         </tbody>
         <a href="/export-tickets" class="button">Exportar Tickets a CSV</a>

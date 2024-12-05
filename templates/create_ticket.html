@@ -7,31 +7,31 @@
 </head>
 <body>
     <h1>Crear un nuevo ticket</h1>
-    <form action="/create-ticket" method="POST" onsubmit="return validarFormulario()">
-        <label for="tipo">Tipo de problema:</label><br>
-        <select name="tipo" id="tipo" required>
-            <option value="">Seleccione un tipo</option>
-            <option value="Conexión">Conexión</option>
-            <option value="Velocidad">Velocidad</option>
-            <option value="Corte de servicio">Corte de servicio</option>
-        </select><br><br>
-
-        <label for="descripcion">Descripción:</label><br>
-        <textarea name="descripcion" id="descripcion" rows="4" cols="50" required></textarea><br><br>
-
-        <label for="prioridad">Prioridad:</label><br>
-        <select name="prioridad" id="prioridad" required>
-            <option value="">Seleccione una prioridad</option>
-            <option value="Baja">Baja</option>
-            <option value="Media">Media</option>
-            <option value="Alta">Alta</option>
-        </select><br><br>
-
-        <label for="usuario">Usuario creador:</label><br>
-        <input type="text" name="usuario" id="usuario" required><br><br>
-
-        <button type="submit">Crear Ticket</button>
-    </form>
+ <form method="POST">
+    <label for="tipo">Tipo de problema:</label>
+    <br>
+    <select name="tipo" id="tipo" required>
+        <option value="">Seleccione un tipo</option>
+        <option value="Conexión">Conexión</option>
+        <option value="Velocidad">Velocidad</option>
+        <option value="Corte de servicio">Corte de servicio</option>
+    </select><br><br>
+    <br>
+    <label for="descripcion">Descripción:</label>
+    <br>
+    <textarea id="descripcion" name="descripcion" required></textarea>
+    <br>
+    <label for="prioridad">Prioridad:</label>
+    <br>
+    <select id="prioridad" name="prioridad" required>
+        <option value="Baja">Baja</option>
+        <option value="Media">Media</option>
+        <option value="Alta">Alta</option>
+    </select>
+    <br><br>
+    <button type="submit">Crear Ticket</button>
+</form>
+    <br>
     <a href="/logout">Cerrar sesión</a>
 
     <script>

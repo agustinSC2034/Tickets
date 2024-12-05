@@ -71,28 +71,29 @@ def login():
 
 # Ruta para crear tickets
 @app.route('/create-ticket', methods=['GET', 'POST'])
+@login_required
 def create_ticket():
     if request.method == 'POST':
         tipo = request.form.get('tipo')
         descripcion = request.form.get('descripcion')
         prioridad = request.form.get('prioridad')
-        usuario = current_user.username
+        usuario_creador = current_user.username  # Asigna automáticamente el usuario autenticado
 
-        # Validación
         if not tipo or not descripcion or not prioridad:
             return "Todos los campos son obligatorios", 400
 
-        # Guarda en la base de datos
         conn = get_db_connection()
         conn.execute(
             'INSERT INTO tickets (tipo, descripcion, prioridad, usuario_creador) VALUES (?, ?, ?, ?)',
-            (tipo, descripcion, prioridad, usuario)
+            (tipo, descripcion, prioridad, usuario_creador)
         )
         conn.commit()
         conn.close()
 
         return redirect('/tickets')
+
     return render_template('create_ticket.html')
+
 
 
 # Ruta para listar tickets
@@ -299,6 +300,30 @@ def export_tickets():
     response = Response(output.getvalue().encode('utf-8-sig'), mimetype='text/csv; charset=utf-8')
     response.headers.set('Content-Disposition', 'attachment', filename='tickets.csv')
     return response
+
+# Cerrar tickets de parte de Directv
+@app.route('/close-ticket/<int:id>', methods=['POST'])
+@login_required
+def close_ticket(id):
+    conn = get_db_connection()
+    ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
+
+    if not ticket:
+        conn.close()
+        return "El ticket no existe", 404
+
+    # Solo DirecTV puede cerrar tickets y no se pueden cerrar si ya están resueltos por Usittel
+    if current_user.role != 'directv' or ticket['estado'] == 'resuelto':
+        conn.close()
+        return "No puedes cerrar este ticket", 403
+
+    # Marcar el ticket como cerrado
+    conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', ('cerrado', id))
+    conn.commit()
+    conn.close()
+
+    return redirect('/tickets')
+
 
 
 
