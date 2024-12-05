@@ -55,17 +55,22 @@
                 <td>{{ ticket['fecha_creacion'] }}</td>
                 <td>{{ ticket['usuario_creador'] }}</td>
                 <td>
-                    <form action="/update-ticket/{{ ticket['id'] }}" method="POST" style="display:inline;">
-                        <select name="nuevo_estado" required>
-                            <option value="pendiente" {% if ticket['estado']=='pendiente' %}selected{% endif %}>
-                                Pendiente</option>
-                            <option value="en proceso" {% if ticket['estado']=='en proceso' %}selected{% endif %}>En
-                                proceso</option>
-                            <option value="resuelto" {% if ticket['estado']=='resuelto' %}selected{% endif %}>Resuelto
-                            </option>
-                        </select>
-                        <button type="submit">Actualizar</button>
-                    </form>
+                    {% if ticket.estado == 'cerrado' %}
+    <p>Estado: Ticket Cerrado</p>
+{% elif current_user.role == 'usittel' %}
+    <form action="/update-ticket/{{ ticket.id }}" method="POST" style="display:inline;">
+        <label for="nuevo_estado">Estado:</label>
+        <select name="nuevo_estado" id="nuevo_estado">
+            <option value="pendiente" {% if ticket.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+            <option value="en proceso" {% if ticket.estado == 'en proceso' %}selected{% endif %}>En Proceso</option>
+            <option value="resuelto" {% if ticket.estado == 'resuelto' %}selected{% endif %}>Resuelto</option>
+        </select>
+        <button type="submit">Actualizar</button>
+    </form>
+{% else %}
+    <p>Estado: {{ ticket.estado }}</p>
+{% endif %}
+
                 </td>
                 <td>
                     {% if current_user.role == 'directv' and ticket.estado != 'resuelto' %}

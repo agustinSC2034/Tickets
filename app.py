@@ -135,10 +135,15 @@ def update_ticket(id):
         conn.close()
         return "El ticket no existe", 404
 
-    # Restricción para DirecTV: No puede modificar tickets marcados como resueltos por Usittel
-    if current_user.role == 'directv' and ticket['estado'] == 'resuelto':
+    # Restricción: Solo Usittel puede cambiar el estado
+    if current_user.role != 'usittel':
         conn.close()
-        return "No puedes editar un ticket marcado como resuelto", 403
+        return "No tienes permiso para cambiar el estado", 403
+
+    # Restricción: No se puede modificar un ticket cerrado
+    if ticket['estado'] == 'cerrado':
+        conn.close()
+        return "No se puede modificar un ticket cerrado", 403
 
     conn.execute(
         'UPDATE tickets SET estado = ? WHERE id = ?',
@@ -148,6 +153,8 @@ def update_ticket(id):
     conn.close()
 
     return redirect('/tickets')
+
+
 
 
 
