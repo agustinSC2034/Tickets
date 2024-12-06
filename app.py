@@ -1,8 +1,7 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 import csv
 from flask import Response
-from flask_login import login_user
 from werkzeug.security import check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -95,6 +94,39 @@ def create_ticket():
     return render_template('create_ticket.html')
 
 
+# Ruta para ver un ticket específico
+@app.route('/ticket/<int:id>', methods=['GET'])
+@login_required
+def view_ticket(id):
+    conn = get_db_connection()
+    ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
+    messages = conn.execute('SELECT * FROM messages WHERE ticket_id = ? ORDER BY fecha ASC', (id,)).fetchall()
+    conn.close()
+
+    if not ticket:
+        return "Ticket no encontrado", 404
+
+    return render_template('view_ticket.html', ticket=ticket, messages=messages, current_user=current_user)
+
+# Ruta para agregar un mensaje a un ticket
+@app.route('/add_message/<int:ticket_id>', methods=['POST'])
+@login_required
+def add_message(ticket_id):
+    mensaje = request.form.get('mensaje')
+
+    if not mensaje:
+        return "Error: El mensaje no puede estar vacío.", 400
+
+    conn = get_db_connection()
+    conn.execute(
+        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
+        (ticket_id, current_user.username, current_user.role, mensaje)
+    )
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('view_ticket', id=ticket_id))
+
 
 
 # Ruta para listar tickets
@@ -120,49 +152,43 @@ def tickets():
     return render_template('tickets.html', tickets=tickets)
 
 
-
-@app.route('/update-ticket/<int:id>', methods=['POST'])
+# Actualizar tickets
+@app.route('/update_ticket/<int:id>', methods=['POST'])
 @login_required
 def update_ticket(id):
+    if current_user.role != 'usittel':
+        return "Acceso denegado: Solo Usittel puede actualizar el estado de un ticket.", 403
+
     nuevo_estado = request.form.get('nuevo_estado')
 
     if not nuevo_estado:
-        return "El estado es obligatorio", 400
+        return "Error: El estado no puede estar vacío.", 400
 
     conn = get_db_connection()
-    ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
 
-    if not ticket:
-        conn.close()
-        return "El ticket no existe", 404
-
-    # Restricción: Solo Usittel puede cambiar el estado
-    if current_user.role != 'usittel':
-        conn.close()
-        return "No tienes permiso para cambiar el estado", 403
-
-    # Restricción: No se puede modificar un ticket cerrado
-    if ticket['estado'] == 'cerrado':
-        conn.close()
-        return "No se puede modificar un ticket cerrado", 403
-
-    # Actualizar estado
+    # Actualiza el estado del ticket
     conn.execute(
         'UPDATE tickets SET estado = ? WHERE id = ?',
         (nuevo_estado, id)
     )
 
-    # Registrar el cambio en el historial
+    # Agrega un mensaje indicando el cambio de estado
     conn.execute(
-        'INSERT INTO historial (ticket_id, accion, usuario) VALUES (?, ?, ?)',
-        (id, f"Cambio de estado a '{nuevo_estado}'", current_user.username)
+        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
+        (id, current_user.username, current_user.role, f"Ha cambiado el estado del ticket a '{nuevo_estado}'")
     )
+
+    # Si el estado es 'resuelto', deshabilita más modificaciones
+    if nuevo_estado.lower() == 'resuelto':
+        conn.execute(
+            'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
+            (id, current_user.username, current_user.role, "El ticket ha sido marcado como resuelto y ya no se puede modificar.")
+        )
 
     conn.commit()
     conn.close()
 
-    return redirect('/tickets')
-
+    return redirect(url_for('view_ticket', id=id))
 
 
 
@@ -318,35 +344,28 @@ def export_tickets():
 
 
 # Cerrar tickets de parte de Directv
-@app.route('/close-ticket/<int:id>', methods=['POST'])
+@app.route('/close_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
-def close_ticket(id):
+def close_ticket(ticket_id):
+    if current_user.role != 'directv':
+        return "Acceso denegado: Solo Directv puede cerrar un ticket.", 403
+
     conn = get_db_connection()
-    ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
-
-    if not ticket:
-        conn.close()
-        return "El ticket no existe", 404
-
-    if current_user.role != 'directv' or ticket['estado'] in ['resuelto', 'cerrado']:
-        conn.close()
-        return "No puedes cerrar este ticket", 403
-
-    # Marcar el ticket como cerrado
-    conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', ('cerrado', id))
-
-    # Registrar el cambio en el historial
     conn.execute(
-        'INSERT INTO historial (ticket_id, accion, usuario) VALUES (?, ?, ?)',
-        (id, "Ticket cerrado", current_user.username)
+        'UPDATE tickets SET estado = ? WHERE id = ?',
+        ('Cerrado', ticket_id)
     )
-
+    conn.execute(
+        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
+        (ticket_id, current_user.username, current_user.role, "Ha cerrado el ticket.")
+    )
     conn.commit()
     conn.close()
 
-    return redirect('/tickets')
+    return redirect(url_for('view_ticket', id=ticket_id))
 
 
+# historial ticket
 @app.route('/ticket-history/<int:id>')
 @login_required
 def ticket_history(id):
@@ -364,6 +383,37 @@ def ticket_history(id):
     return render_template('ticket_history.html', ticket=ticket, historial=historial)
 
 
+# reabrir tickets
+@app.route('/reopen_ticket/<int:id>', methods=['POST'])
+@login_required
+def reopen_ticket(id):
+    if current_user.role != 'directv':
+        return "Acceso denegado: Solo Directv puede reabrir un ticket.", 403
+
+    conn = get_db_connection()
+
+    # Verificar el estado actual del ticket
+    ticket = conn.execute('SELECT estado FROM tickets WHERE id = ?', (id,)).fetchone()
+
+    if not ticket or ticket['estado'].lower() not in ['resuelto', 'cerrado']:
+        return "El ticket no está en un estado que permita reabrirse.", 400
+
+    # Cambiar el estado del ticket a 'pendiente'
+    conn.execute(
+        'UPDATE tickets SET estado = ? WHERE id = ?',
+        ('pendiente', id)
+    )
+
+    # Agregar un mensaje en el historial indicando que el ticket fue reabierto
+    conn.execute(
+        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
+        (id, current_user.username, current_user.role, "Ha reabierto el ticket.")
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('view_ticket', id=id))
 
 
 

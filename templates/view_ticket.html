@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Ticket</title>
+</head>
+<body>
+    <h1>Detalles del Ticket</h1>
+    <p><strong>Tipo:</strong> {{ ticket['tipo'] }}</p>
+    <p><strong>Descripción:</strong> {{ ticket['descripcion'] }}</p>
+    <p><strong>Prioridad:</strong> {{ ticket['prioridad'] }}</p>
+    <p><strong>Estado:</strong> {{ ticket['estado'] }}</p>
+    <p><strong>Usuario Creador:</strong> {{ ticket['usuario_creador'] }}</p>
+    <p><strong>Usuario Asignado:</strong> {{ ticket['usuario_asignado'] }}</p>
+
+    <!-- Mostrar mensajes -->
+    <h2>Mensajes</h2>
+    <div>
+        {% for message in messages %}
+            <p><strong>{{ message['usuario'] }} ({{ message['rol'] }})</strong> - {{ message['fecha'] }}</p>
+            <p>{{ message['mensaje'] }}</p>
+            <hr>
+        {% endfor %}
+    </div>
+
+    <!-- Mostrar formulario de mensajes solo si el ticket no está cerrado o resuelto -->
+    {% if ticket['estado'].lower() not in ['cerrado', 'resuelto'] %}
+    <h2>Agregar Mensaje</h2>
+    <form method="POST" action="{{ url_for('add_message', ticket_id=ticket['id']) }}">
+        <textarea name="mensaje" rows="4" cols="50" required></textarea><br>
+        <button type="submit">Enviar</button>
+    </form>
+{% else %}
+    <p><strong>Este ticket está {{ ticket['estado'] }} y ya no se pueden agregar mensajes.</strong></p>
+{% endif %}
+
+    <!-- Opciones de Usittel para actualizar el estado -->
+    {% if current_user.role == 'usittel' and ticket['estado'] != 'Cerrado' %}
+        <h2>Actualizar Estado</h2>
+        <form method="POST" action="{{ url_for('update_ticket', id=ticket['id']) }}">
+            <select name="nuevo_estado" required>
+                <option value="Pendiente" {% if ticket['estado'] == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                <option value="En proceso" {% if ticket['estado'] == 'En proceso' %}selected{% endif %}>En proceso</option>
+                <option value="Resuelto" {% if ticket['estado'] == 'Resuelto' %}selected{% endif %}>Resuelto</option>
+            </select>
+            <button type="submit">Actualizar Estado</button>
+        </form>
+    {% endif %}
+
+    {% if ticket['estado'].lower() in ['resuelto', 'cerrado'] and current_user.role == 'directv' %}
+    <form method="POST" action="{{ url_for('reopen_ticket', id=ticket['id']) }}">
+        <button type="submit" class="btn btn-warning">Reabrir Ticket</button>
+    </form>
+{% endif %}
+
+
+    <!-- Botón de Directv para cerrar el ticket -->
+    {% if current_user.role == 'directv' and ticket['estado'] != 'Cerrado' %}
+        <h2>Cerrar Ticket</h2>
+        <form method="POST" action="{{ url_for('close_ticket', ticket_id=ticket['id']) }}">
+            <button type="submit">Cerrar Ticket</button>
+        </form>
+    {% endif %}
+    <br>
+    <a href="/tickets">Volver a vista general</a>
+</body>
+</html>
+
