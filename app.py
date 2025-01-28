@@ -69,22 +69,23 @@ def login():
 
 
 # Ruta para crear tickets
-@app.route('/create-ticket', methods=['GET', 'POST'])
+@app.route('/create_ticket', methods=['GET', 'POST'])
 @login_required
 def create_ticket():
-    if request.method == 'POST':
-        tipo = request.form.get('tipo')
-        descripcion = request.form.get('descripcion')
-        prioridad = request.form.get('prioridad')
-        usuario = current_user.username  # El usuario creador es el usuario autenticado
+    # Restringir acceso a usuarios con rol distinto de 'usittel'
+    if current_user.role == 'usittel':
+        return "Acceso denegado. Usittel no puede crear tickets.", 403
 
-        if not tipo or not descripcion or not prioridad:
-            return "Todos los campos son obligatorios", 400
+    if request.method == 'POST':
+        tipo = request.form['tipo']
+        descripcion = request.form['descripcion']
+        prioridad = request.form['prioridad']
+        usuario_creador = current_user.username
 
         conn = get_db_connection()
         conn.execute(
             'INSERT INTO tickets (tipo, descripcion, prioridad, usuario_creador) VALUES (?, ?, ?, ?)',
-            (tipo, descripcion, prioridad, usuario)
+            (tipo, descripcion, prioridad, usuario_creador)
         )
         conn.commit()
         conn.close()
@@ -92,6 +93,7 @@ def create_ticket():
         return redirect('/tickets')
 
     return render_template('create_ticket.html')
+
 
 
 # Ruta para ver un ticket específico
@@ -131,15 +133,16 @@ def add_message(ticket_id):
 
 # Ruta para listar tickets
 @app.route('/tickets')
+@login_required
 def tickets():
-    estado = request.args.get('estado')  # Filtrar por estado
-    prioridad = request.args.get('prioridad')  # Filtrar por prioridad
+    estado = request.args.get('estado', '').strip()
+    prioridad = request.args.get('prioridad', '').strip()
 
     query = 'SELECT * FROM tickets WHERE 1=1'
     params = []
 
     if estado:
-        query += ' AND estado = ?'
+        query += ' AND LOWER(estado) = LOWER(?)'
         params.append(estado)
 
     if prioridad:
@@ -147,9 +150,13 @@ def tickets():
         params.append(prioridad)
 
     conn = get_db_connection()
-    tickets = conn.execute('SELECT * FROM tickets').fetchall()
+    tickets = conn.execute(query, params).fetchall()
     conn.close()
-    return render_template('tickets.html', tickets=tickets)
+
+    return render_template('tickets.html', tickets=tickets, estado=estado, prioridad=prioridad)
+
+
+
 
 
 # Actualizar tickets
@@ -259,44 +266,41 @@ def add_note(id):
     return f"Nota agregada exitosamente. <a href='/ticket/{id}'>Volver al ticket</a>"
 
 
-# Ruta para crear usuarios
 @app.route('/register', methods=['GET', 'POST'])
 @login_required
 def register():
-    # Solo los administradores (Usittel) pueden registrar usuarios
+    # Solo los usuarios con rol 'usittel' pueden acceder a esta ruta
     if current_user.role != 'usittel':
-        return "Acceso denegado", 403
+        return "Acceso denegado. Solo Usittel puede registrar usuarios.", 403
 
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        role = request.form.get('role')
+        username = request.form['username']
+        password = request.form['password']
+        role = request.form['role']
 
         # Validaciones básicas
         if not username or not password or not role:
             return "Todos los campos son obligatorios", 400
 
-        conn = get_db_connection()
-        user_exists = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
-        
-        if user_exists:
-            conn.close()
-            return "El usuario ya existe. Por favor, elige otro nombre.", 400  # Aquí puedes personalizar la respuesta para que sea más visual en el formulario
-
-        # Generar el hash de la contraseña
         hashed_password = generate_password_hash(password)
 
-        # Guardar en la base de datos
-        conn.execute(
-            'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-            (username, hashed_password, role)
-        )
-        conn.commit()
-        conn.close()
+        conn = get_db_connection()
+        try:
+            conn.execute(
+                'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+                (username, hashed_password, role)
+            )
+            conn.commit()
+        except sqlite3.IntegrityError:
+            return "El nombre de usuario ya existe. Por favor, elige otro nombre."
+        finally:
+            conn.close()
 
-        return redirect('/tickets')  # Redirige a la lista de tickets después de registrar
+        return redirect('/tickets')
 
     return render_template('register.html')
+
+
 
 
 @app.route('/logout')
