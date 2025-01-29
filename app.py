@@ -135,17 +135,17 @@ def add_message(ticket_id):
 @app.route('/tickets')
 @login_required
 def tickets():
-    estado = request.args.get('estado', '').strip()
-    prioridad = request.args.get('prioridad', '').strip()
+    estado = request.args.get('estado')
+    prioridad = request.args.get('prioridad')
 
     query = 'SELECT * FROM tickets WHERE 1=1'
     params = []
 
-    if estado:
-        query += ' AND LOWER(estado) = LOWER(?)'
+    if estado in ['pendiente', 'en proceso', 'cerrado']:
+        query += ' AND estado = ?'
         params.append(estado)
 
-    if prioridad:
+    if prioridad in ['Baja', 'Media', 'Alta']:
         query += ' AND prioridad = ?'
         params.append(prioridad)
 
@@ -159,43 +159,47 @@ def tickets():
 
 
 
+
 # Actualizar tickets
-@app.route('/update_ticket/<int:id>', methods=['POST'])
+@app.route('/update-ticket/<int:id>', methods=['POST'])
 @login_required
 def update_ticket(id):
-    if current_user.role != 'usittel':
-        return "Acceso denegado: Solo Usittel puede actualizar el estado de un ticket.", 403
-
     nuevo_estado = request.form.get('nuevo_estado')
 
     if not nuevo_estado:
-        return "Error: El estado no puede estar vacío.", 400
+        return "Error: El estado es obligatorio.", 400
 
     conn = get_db_connection()
+    ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
 
-    # Actualiza el estado del ticket
-    conn.execute(
-        'UPDATE tickets SET estado = ? WHERE id = ?',
-        (nuevo_estado, id)
-    )
+    if not ticket:
+        conn.close()
+        return "Ticket no encontrado", 404
 
-    # Agrega un mensaje indicando el cambio de estado
-    conn.execute(
-        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
-        (id, current_user.username, current_user.role, f"Ha cambiado el estado del ticket a '{nuevo_estado}'")
-    )
+    # Directv solo puede cerrar o reabrir tickets
+    if current_user.role == 'directv':
+        if ticket['estado'] == 'cerrado' and nuevo_estado == 'pendiente':
+            conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
+        elif ticket['estado'] != 'cerrado' and nuevo_estado == 'cerrado':
+            conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
+        else:
+            conn.close()
+            return "No tienes permiso para realizar esta acción", 403
 
-    # Si el estado es 'resuelto', deshabilita más modificaciones
-    if nuevo_estado.lower() == 'resuelto':
-        conn.execute(
-            'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
-            (id, current_user.username, current_user.role, "El ticket ha sido marcado como resuelto y ya no se puede modificar.")
-        )
+    # Usittel solo puede cambiar "pendiente" y "en proceso"
+    elif current_user.role == 'usittel':
+        if ticket['estado'] != 'cerrado' and nuevo_estado in ['pendiente', 'en proceso']:
+            conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
+        elif nuevo_estado == 'cerrado':
+            conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
+        else:
+            conn.close()
+            return "No tienes permiso para realizar esta acción", 403
 
     conn.commit()
     conn.close()
-
     return redirect(url_for('view_ticket', id=id))
+
 
 
 

@@ -15,10 +15,12 @@
         <label for="estado">Estado:</label>
         <select name="estado" id="estado">
             <option value="" {% if not estado %}selected{% endif %}>Todos</option>
-            <option value="pendiente" {% if estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
-            <option value="en proceso" {% if estado == 'en proceso' %}selected{% endif %}>En proceso</option>
-            <option value="resuelto" {% if estado == 'resuelto' %}selected{% endif %}>Resuelto</option>
+            <option value="pendiente" {% if estado=='pendiente' %}selected{% endif %}>Pendiente</option>
+            <option value="en proceso" {% if estado=='en proceso' %}selected{% endif %}>En proceso</option>
+            <option value="cerrado" {% if estado=='cerrado' %}selected{% endif %}>Cerrado</option>
         </select>
+        
+        
     
         <label for="prioridad">Prioridad:</label>
         <select name="prioridad" id="prioridad">

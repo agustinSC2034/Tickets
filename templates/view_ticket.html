@@ -36,33 +36,33 @@
 {% endif %}
 
     <!-- Opciones de Usittel para actualizar el estado -->
-    {% if current_user.role == 'usittel' and ticket['estado'] != 'Cerrado' %}
-        <h2>Actualizar Estado</h2>
-        <form method="POST" action="{{ url_for('update_ticket', id=ticket['id']) }}">
-            <select name="nuevo_estado" required>
-                <option value="Pendiente" {% if ticket['estado'] == 'Pendiente' %}selected{% endif %}>Pendiente</option>
-                <option value="En proceso" {% if ticket['estado'] == 'En proceso' %}selected{% endif %}>En proceso</option>
-                <option value="Resuelto" {% if ticket['estado'] == 'Resuelto' %}selected{% endif %}>Resuelto</option>
+    <h3>Actualizar Estado</h3>
+
+    {% if current_user.role == 'usittel' and ticket.estado != 'cerrado' %}
+        <form action="{{ url_for('update_ticket', id=ticket.id) }}" method="POST">
+            <select name="nuevo_estado">
+                <option value="pendiente" {% if ticket.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                <option value="en proceso" {% if ticket.estado == 'en proceso' %}selected{% endif %}>En proceso</option>
+                <option value="cerrado" {% if ticket.estado == 'cerrado' %}selected{% endif %}>Cerrado</option>
             </select>
             <button type="submit">Actualizar Estado</button>
         </form>
     {% endif %}
-
-    {% if ticket['estado'].lower() in ['resuelto', 'cerrado'] and current_user.role == 'directv' %}
-    <form method="POST" action="{{ url_for('reopen_ticket', id=ticket['id']) }}">
-        <button type="submit" class="btn btn-warning">Reabrir Ticket</button>
-    </form>
-{% endif %}
-
-
-    <!-- Botón de Directv para cerrar el ticket -->
-    {% if current_user.role == 'directv' and ticket['estado'] != 'Cerrado' %}
-        <h2>Cerrar Ticket</h2>
-        <form method="POST" action="{{ url_for('close_ticket', ticket_id=ticket['id']) }}">
+    
+    {% if current_user.role == 'directv' and ticket.estado != 'cerrado' %}
+        <form action="{{ url_for('update_ticket', id=ticket.id) }}" method="POST">
+            <input type="hidden" name="nuevo_estado" value="cerrado">
             <button type="submit">Cerrar Ticket</button>
         </form>
     {% endif %}
-    <br>
+    
+    {% if current_user.role == 'directv' and ticket.estado == 'cerrado' %}
+        <form action="{{ url_for('update_ticket', id=ticket.id) }}" method="POST">
+            <input type="hidden" name="nuevo_estado" value="pendiente">
+            <button type="submit">Reabrir Ticket</button>
+        </form>
+    {% endif %}
+
     <a href="/tickets">Volver a vista general</a>
 </body>
 </html>
