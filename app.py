@@ -6,6 +6,19 @@ from werkzeug.security import check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from flask_mail import Mail, Message
+
+# Configuración de Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Servidor SMTP de Gmail (ajustar según el proveedor)
+app.config['MAIL_PORT'] = 587  # Puerto para TLS
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'tuemail@gmail.com'  # Cambiar por tu email
+app.config['MAIL_PASSWORD'] = 'tucontraseña'  # Cambiar por la contraseña del email
+app.config['MAIL_DEFAULT_SENDER'] = 'tuemail@gmail.com'  # El mismo que MAIL_USERNAME
+
+mail = Mail(app)
+
 
 # Conexión a la base de datos
 def get_db_connection():
@@ -52,19 +65,21 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
 
         conn = get_db_connection()
-        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
         conn.close()
 
         if user and check_password_hash(user['password'], password):
             login_user(User(id=user['id'], username=user['username'], role=user['role']))
-            return redirect('/tickets')  # Redirige a la lista de tickets después de iniciar sesión
-        return "Usuario o contraseña incorrectos"
+            return redirect('/tickets')
+
+        return "Correo o contraseña incorrectos"
 
     return render_template('login.html')
+
 
 
 
@@ -157,49 +172,30 @@ def tickets():
 
 
 
-
-
-
 # Actualizar tickets
-@app.route('/update-ticket/<int:id>', methods=['POST'])
+@app.route('/ticket/<int:id>/update', methods=['POST'])
 @login_required
 def update_ticket(id):
-    nuevo_estado = request.form.get('nuevo_estado')
+    if current_user.role != 'usittel':
+        return "Acceso denegado", 403
 
-    if not nuevo_estado:
-        return "Error: El estado es obligatorio.", 400
+    nuevo_estado = request.form['estado']
 
     conn = get_db_connection()
     ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
-
-    if not ticket:
-        conn.close()
-        return "Ticket no encontrado", 404
-
-    # Directv solo puede cerrar o reabrir tickets
-    if current_user.role == 'directv':
-        if ticket['estado'] == 'cerrado' and nuevo_estado == 'pendiente':
-            conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
-        elif ticket['estado'] != 'cerrado' and nuevo_estado == 'cerrado':
-            conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
-        else:
-            conn.close()
-            return "No tienes permiso para realizar esta acción", 403
-
-    # Usittel solo puede cambiar "pendiente" y "en proceso"
-    elif current_user.role == 'usittel':
-        if ticket['estado'] != 'cerrado' and nuevo_estado in ['pendiente', 'en proceso']:
-            conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
-        elif nuevo_estado == 'cerrado':
-            conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
-        else:
-            conn.close()
-            return "No tienes permiso para realizar esta acción", 403
-
+    conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
     conn.commit()
-    conn.close()
-    return redirect(url_for('view_ticket', id=id))
 
+    # Obtener email del usuario creador del ticket (Directv)
+    usuario_creador = ticket['usuario_creador']
+    user = conn.execute('SELECT email FROM users WHERE username = ?', (usuario_creador,)).fetchone()
+    conn.close()
+
+    if user:
+        send_email(user['email'], "Estado de tu ticket actualizado",
+                   f"El estado de tu ticket #{id} ha cambiado a {nuevo_estado}")
+
+    return redirect(url_for('view_ticket', id=id))
 
 
 
@@ -215,9 +211,6 @@ def delete_ticket(id):
     conn.commit()
     conn.close()
     return redirect('/tickets')
-
-
-
 
 
 @app.route('/ticket/<int:id>')
@@ -271,19 +264,15 @@ def add_note(id):
 
 
 @app.route('/register', methods=['GET', 'POST'])
-@login_required
 def register():
-    # Solo los usuarios con rol 'usittel' pueden acceder a esta ruta
-    if current_user.role != 'usittel':
-        return "Acceso denegado. Solo Usittel puede registrar usuarios.", 403
-
     if request.method == 'POST':
+        email = request.form['email']
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']
 
         # Validaciones básicas
-        if not username or not password or not role:
+        if not email or not username or not password or not role:
             return "Todos los campos son obligatorios", 400
 
         hashed_password = generate_password_hash(password)
@@ -291,20 +280,18 @@ def register():
         conn = get_db_connection()
         try:
             conn.execute(
-                'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
-                (username, hashed_password, role)
+                'INSERT INTO users (email, username, password, role) VALUES (?, ?, ?, ?)',
+                (email, username, hashed_password, role)
             )
             conn.commit()
         except sqlite3.IntegrityError:
-            return "El nombre de usuario ya existe. Por favor, elige otro nombre."
+            return "El email o el nombre de usuario ya existe.", 400
         finally:
             conn.close()
 
-        return redirect('/tickets')
+        return redirect('/login')
 
     return render_template('register.html')
-
-
 
 
 @app.route('/logout')
@@ -312,7 +299,6 @@ def register():
 def logout():
     logout_user()
     return redirect('/login')  # Redirige al formulario de inicio de sesión
-
 
 
 # Exportar tickets
@@ -352,25 +338,26 @@ def export_tickets():
 
 
 # Cerrar tickets de parte de Directv
-@app.route('/close_ticket/<int:ticket_id>', methods=['POST'])
+@app.route('/ticket/<int:id>/close', methods=['POST'])
 @login_required
-def close_ticket(ticket_id):
-    if current_user.role != 'directv':
-        return "Acceso denegado: Solo Directv puede cerrar un ticket.", 403
-
+def close_ticket(id):
     conn = get_db_connection()
-    conn.execute(
-        'UPDATE tickets SET estado = ? WHERE id = ?',
-        ('Cerrado', ticket_id)
-    )
-    conn.execute(
-        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
-        (ticket_id, current_user.username, current_user.role, "Ha cerrado el ticket.")
-    )
-    conn.commit()
-    conn.close()
+    ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
 
-    return redirect(url_for('view_ticket', id=ticket_id))
+    if current_user.role == 'directv':
+        conn.execute('UPDATE tickets SET estado = "cerrado" WHERE id = ?', (id,))
+        conn.commit()
+
+        # Obtener email de los administradores de Usittel
+        usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
+        conn.close()
+
+        for user in usittel_users:
+            send_email(user['email'], "Ticket cerrado",
+                       f"El ticket #{id} ha sido cerrado por Directv.")
+
+    return redirect(url_for('view_ticket', id=id))
+
 
 
 # historial ticket
@@ -424,6 +411,14 @@ def reopen_ticket(id):
     return redirect(url_for('view_ticket', id=id))
 
 
+def send_email(to, subject, message):
+    try:
+        msg = Message(subject, recipients=[to])
+        msg.body = message
+        mail.send(msg)
+        print(f"Correo enviado a {to}: {subject}")
+    except Exception as e:
+        print(f"Error al enviar correo: {e}")
 
 
 
