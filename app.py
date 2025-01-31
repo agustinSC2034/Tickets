@@ -8,16 +8,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from flask_mail import Mail, Message
 
-# Configuración de Flask-Mail
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Servidor SMTP de Gmail (ajustar según el proveedor)
-app.config['MAIL_PORT'] = 587  # Puerto para TLS
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'tuemail@gmail.com'  # Cambiar por tu email
-app.config['MAIL_PASSWORD'] = 'tucontraseña'  # Cambiar por la contraseña del email
-app.config['MAIL_DEFAULT_SENDER'] = 'tuemail@gmail.com'  # El mismo que MAIL_USERNAME
 
-mail = Mail(app)
+
 
 
 # Conexión a la base de datos
@@ -30,6 +22,18 @@ def get_db_connection():
 app = Flask(__name__)
 app.secret_key = 'inception'  # Agrega esta línea para habilitar sesiones seguras
 
+
+# Configuración de Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Servidor SMTP de Gmail (ajustar según el proveedor)
+app.config['MAIL_PORT'] = 587  # Puerto para TLS
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'info@it-tel.com.ar'  # ✨ Reemplazá con el email real
+app.config['MAIL_PASSWORD'] = 'vyva wxzr nuoz bhsv'  # ✨ "contraseña de aplicación"
+app.config['MAIL_DEFAULT_SENDER'] = 'info@it-tel.com.ar'  # ✨ Debe ser el mismo email que el MAIL_USERNAME
+
+
+mail = Mail(app)
 
 # Configurar Flask-Login
 login_manager = LoginManager()
@@ -103,11 +107,20 @@ def create_ticket():
             (tipo, descripcion, prioridad, usuario_creador)
         )
         conn.commit()
+
+        # Obtener emails de los administradores de Usittel
+        usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
         conn.close()
+
+        # Enviar correo a Usittel notificando la creación del ticket
+        for user in usittel_users:
+            send_email(user['email'], "Nuevo Ticket Creado",
+                       f"Se ha creado un nuevo ticket de Directv con prioridad {prioridad}.")
 
         return redirect('/tickets')
 
     return render_template('create_ticket.html')
+
 
 
 
@@ -344,17 +357,29 @@ def close_ticket(id):
     conn = get_db_connection()
     ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
 
+    if not ticket:
+        return "El ticket no existe", 404
+
+    if current_user.role not in ['directv', 'usittel']:
+        return "Acceso denegado", 403
+
+    conn.execute('UPDATE tickets SET estado = "cerrado" WHERE id = ?', (id,))
+    conn.commit()
+
+    # Notificar por correo electrónico a los usuarios correspondientes
+    usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
+    directv_users = conn.execute('SELECT email FROM users WHERE role = "directv"').fetchall()
+    conn.close()
+
+    # Enviar correos a los usuarios de Usittel si Directv cierra el ticket
     if current_user.role == 'directv':
-        conn.execute('UPDATE tickets SET estado = "cerrado" WHERE id = ?', (id,))
-        conn.commit()
-
-        # Obtener email de los administradores de Usittel
-        usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
-        conn.close()
-
         for user in usittel_users:
-            send_email(user['email'], "Ticket cerrado",
-                       f"El ticket #{id} ha sido cerrado por Directv.")
+            send_email(user['email'], "Ticket cerrado", f"El ticket #{id} ha sido cerrado por Directv.")
+
+    # Enviar correos a los usuarios de Directv si Usittel cierra el ticket
+    if current_user.role == 'usittel':
+        for user in directv_users:
+            send_email(user['email'], "Ticket cerrado", f"El ticket #{id} ha sido cerrado por Usittel.")
 
     return redirect(url_for('view_ticket', id=id))
 
