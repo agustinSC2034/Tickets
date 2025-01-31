@@ -112,7 +112,7 @@ def create_ticket():
         usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
         conn.close()
 
-        # Enviar correo a Usittel notificando la creación del ticket
+        # Enviar correo a Usittel notificando la creaOción del ticket
         for user in usittel_users:
             send_email(user['email'], "Nuevo Ticket Creado",
                        f"Se ha creado un nuevo ticket de Directv con prioridad {prioridad}.")
