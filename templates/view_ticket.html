@@ -59,17 +59,17 @@
     <!-- Opciones de Usittel para actualizar el estado -->
     <h3>Actualizar Estado</h3>
 
-    {% if current_user.role == 'usittel' %}
-    <form action="{{ url_for('update_ticket', id=ticket.id) }}" method="POST" onsubmit="showLoading()">
+    {% if current_user.role == 'usittel' and ticket.estado != 'cerrado' %}
+    <form action="/update-ticket/{{ ticket.id }}" method="POST" onsubmit="showLoading()">
         <label for="estado">Actualizar Estado:</label>
-        <select name="estado" id="estado">
-            <option value="pendiente" {% if ticket.estado=='pendiente' %}selected{% endif %}>Pendiente</option>
-            <option value="en proceso" {% if ticket.estado=='en proceso' %}selected{% endif %}>En proceso</option>
-            <option value="cerrado" {% if ticket.estado=='cerrado' %}selected{% endif %}>Cerrado</option>
+        <select name="estado">
+            <option value="pendiente" {% if ticket.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+            <option value="en proceso" {% if ticket.estado == 'en proceso' %}selected{% endif %}>En proceso</option>
+            <option value="cerrado" {% if ticket.estado == 'cerrado' %}selected{% endif %}>Cerrado</option>
         </select>
-        <button type="submit">Actualizar</button>
+        <button type="submit">Actualizar Estado</button>
     </form>
-    {% endif %}
+{% endif %}
 
 
     {% if current_user.role == 'directv' or current_user.role == 'usittel' %}
