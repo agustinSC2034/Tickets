@@ -436,17 +436,15 @@ def reopen_ticket(id):
 
     conn = get_db_connection()
 
-    # Verificar si el ticket está cerrado
+    # Verificar el estado actual del ticket
     ticket = conn.execute('SELECT estado FROM tickets WHERE id = ?', (id,)).fetchone()
 
     if not ticket or ticket['estado'].lower() != 'cerrado':
+        conn.close()
         return "El ticket no está en un estado que permita reabrirse.", 400
 
-    # Cambiar el estado a 'pendiente'
-    conn.execute(
-        'UPDATE tickets SET estado = ? WHERE id = ?',
-        ('pendiente', id)
-    )
+    # Cambiar el estado del ticket a 'pendiente'
+    conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', ('pendiente', id))
 
     # Agregar un mensaje en el historial indicando que el ticket fue reabierto
     conn.execute(
@@ -458,6 +456,7 @@ def reopen_ticket(id):
     conn.close()
 
     return redirect(url_for('view_ticket', id=id))
+
 
 
 

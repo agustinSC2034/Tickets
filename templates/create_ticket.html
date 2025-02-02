@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
+    <script>
+        function showLoading() {
+            let loadingDiv = document.createElement("div");
+            loadingDiv.id = "loadingMessage";
+            loadingDiv.innerHTML = "<p>Procesando...</p>";
+            loadingDiv.style.position = "fixed";
+            loadingDiv.style.top = "50%";
+            loadingDiv.style.left = "50%";
+            loadingDiv.style.transform = "translate(-50%, -50%)";
+            loadingDiv.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+            loadingDiv.style.color = "white";
+            loadingDiv.style.padding = "20px";
+            loadingDiv.style.borderRadius = "10px";
+            document.body.appendChild(loadingDiv);
+        }
+    </script>
+    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Ticket</title>
