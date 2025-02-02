@@ -81,12 +81,12 @@
 {% endif %}
 
 
-    {% if current_user.role == 'directv' and ticket.estado == 'cerrado' %}
-    <form action="{{ url_for('update_ticket', id=ticket.id) }}" method="POST">
-        <input type="hidden" name="nuevo_estado" value="pendiente">
-        <button type="submit">Reabrir Ticket</button>
-    </form>
-    {% endif %}
+{% if current_user.role == 'directv' and ticket.estado == 'cerrado' %}
+<form method="POST" action="{{ url_for('reopen_ticket', id=ticket.id) }}">
+    <button type="submit">Reabrir Ticket</button>
+</form>
+{% endif %}
+
 
     <a href="/tickets">Volver a vista general</a>
 </body>
