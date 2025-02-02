@@ -2,6 +2,26 @@
 <html lang="es">
 
 <head>
+    <script>
+        function showLoading() {
+            let loadingDiv = document.createElement("div");
+            loadingDiv.id = "loadingPopup";
+            loadingDiv.style.position = "fixed";
+            loadingDiv.style.top = "50%";
+            loadingDiv.style.left = "50%";
+            loadingDiv.style.transform = "translate(-50%, -50%)";
+            loadingDiv.style.padding = "20px";
+            loadingDiv.style.background = "#fff";
+            loadingDiv.style.border = "2px solid #000";
+            loadingDiv.style.zIndex = "1000";
+            loadingDiv.innerHTML = "<strong>Procesando...</strong>";
+    
+            document.body.appendChild(loadingDiv);
+        }
+    </script>
+    
+
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Tickets</title>
@@ -11,7 +31,7 @@
     <h1>Lista de Tickets</h1>
 
     <!-- Filtros -->
-    <form action="/tickets" method="GET">
+    <form action="/tickets" method="GET" onsubmit="showLoading()">
         <label for="estado">Estado:</label>
         <select name="estado" id="estado">
             <option value="" {% if not estado %}selected{% endif %}>Todos</option>

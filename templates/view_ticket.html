@@ -2,6 +2,25 @@
 <html lang="en">
 
 <head>
+    <script>
+        function showLoading() {
+            let loadingDiv = document.createElement("div");
+            loadingDiv.id = "loadingPopup";
+            loadingDiv.style.position = "fixed";
+            loadingDiv.style.top = "50%";
+            loadingDiv.style.left = "50%";
+            loadingDiv.style.transform = "translate(-50%, -50%)";
+            loadingDiv.style.padding = "20px";
+            loadingDiv.style.background = "#fff";
+            loadingDiv.style.border = "2px solid #000";
+            loadingDiv.style.zIndex = "1000";
+            loadingDiv.innerHTML = "<strong>Procesando...</strong>";
+    
+            document.body.appendChild(loadingDiv);
+        }
+    </script>
+    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ver Ticket</title>
@@ -29,7 +48,7 @@
     <!-- Mostrar formulario de mensajes solo si el ticket no está cerrado o resuelto -->
     {% if ticket['estado'].lower() not in ['cerrado', 'resuelto'] %}
     <h2>Agregar Mensaje</h2>
-    <form method="POST" action="{{ url_for('add_message', ticket_id=ticket['id']) }}">
+    <form method="POST" action="{{ url_for('add_message', ticket_id=ticket['id']) }}" onsubmit="showLoading()">
         <textarea name="mensaje" rows="4" cols="50" required></textarea><br>
         <button type="submit">Enviar</button>
     </form>
@@ -41,7 +60,7 @@
     <h3>Actualizar Estado</h3>
 
     {% if current_user.role == 'usittel' %}
-    <form action="{{ url_for('update_ticket', id=ticket.id) }}" method="POST">
+    <form action="{{ url_for('update_ticket', id=ticket.id) }}" method="POST" onsubmit="showLoading()">
         <label for="estado">Actualizar Estado:</label>
         <select name="estado" id="estado">
             <option value="pendiente" {% if ticket.estado=='pendiente' %}selected{% endif %}>Pendiente</option>
@@ -55,7 +74,7 @@
 
     {% if current_user.role == 'directv' or current_user.role == 'usittel' %}
     {% if ticket.estado != 'cerrado' %}
-        <form action="{{ url_for('close_ticket', id=ticket.id) }}" method="POST">
+        <form action="{{ url_for('close_ticket', id=ticket.id) }}" method="POST" onsubmit="showLoading()">
             <button type="submit">Cerrar Ticket</button>
         </form>
     {% endif %}

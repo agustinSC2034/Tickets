@@ -91,7 +91,6 @@ def login():
 @app.route('/create_ticket', methods=['GET', 'POST'])
 @login_required
 def create_ticket():
-    # Restringir acceso a usuarios con rol distinto de 'usittel'
     if current_user.role == 'usittel':
         return "Acceso denegado. Usittel no puede crear tickets.", 403
 
@@ -112,16 +111,18 @@ def create_ticket():
         usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
         conn.close()
 
-        # Enviar correo a Usittel notificando la creaOción del ticket
+        # Enviar notificación a Usittel
         for user in usittel_users:
             send_email(user['email'], "Nuevo Ticket Creado",
-                       f"Se ha creado un nuevo ticket de Directv con prioridad {prioridad}.")
+                       f"Se ha creado un nuevo ticket:\n\n"
+                       f"Tipo: {tipo}\n"
+                       f"Prioridad: {prioridad}\n"
+                       f"Descripción: {descripcion}\n\n"
+                       f"Creado por: {usuario_creador}")
 
         return redirect('/tickets')
 
     return render_template('create_ticket.html')
-
-
 
 
 # Ruta para ver un ticket específico
@@ -148,15 +149,38 @@ def add_message(ticket_id):
         return "Error: El mensaje no puede estar vacío.", 400
 
     conn = get_db_connection()
+    ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (ticket_id,)).fetchone()
     conn.execute(
         'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
         (ticket_id, current_user.username, current_user.role, mensaje)
     )
     conn.commit()
+
+    # Obtener email del usuario creador (si lo escribe Usittel) o de Usittel (si lo escribe Directv)
+    destinatario = None
+    if current_user.role == 'usittel':
+        destinatario = conn.execute('SELECT email FROM users WHERE username = ?', (ticket['usuario_creador'],)).fetchone()
+    else:
+        usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
+        destinatario = usittel_users
+
     conn.close()
 
-    return redirect(url_for('view_ticket', id=ticket_id))
+    # Enviar correo de notificación
+    if destinatario:
+        if isinstance(destinatario, list):
+            for user in destinatario:
+                send_email(user['email'], "Nuevo mensaje en el ticket",
+                           f"Se ha agregado un nuevo mensaje en el ticket #{ticket_id}:\n\n"
+                           f"{mensaje}\n\n"
+                           f"De: {current_user.username}")
+        else:
+            send_email(destinatario['email'], "Nuevo mensaje en el ticket",
+                       f"Se ha agregado un nuevo mensaje en el ticket #{ticket_id}:\n\n"
+                       f"{mensaje}\n\n"
+                       f"De: {current_user.username}")
 
+    return redirect(url_for('view_ticket', id=ticket_id))
 
 
 # Ruta para listar tickets

@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Crear un nuevo ticket</h1>
- <form method="POST">
+ <form method="POST" onsubmit="showLoading()">
     <label for="tipo">Tipo de problema:</label>
     <br>
     <select name="tipo" id="tipo" required>
