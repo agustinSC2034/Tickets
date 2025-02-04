@@ -1,0 +1,166 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 15px;
+}
+
+.filters {
+    margin: 20px;
+}
+
+.tickets-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px auto;
+    background: white;
+}
+
+.tickets-table th, .tickets-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.ticket-row.pendiente { background-color: #ffcc80; }
+.ticket-row.en-proceso { background-color: #90caf9; }
+.ticket-row.cerrado { background-color: #e0e0e0; }
+
+
+
+
+
+/* Estilos para la vista de un ticket */
+.ticket-details {
+    background: #f9f9f9;
+    padding: 15px;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Chat de mensajes */
+.messages-container {
+    margin: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    max-width: 60%;
+}
+
+.directv-message {
+    background-color: #d1ecf1;
+    text-align: right;
+    margin-left: auto;
+}
+
+.usittel-message {
+    background-color: #f8d7da;
+    text-align: left;
+    margin-right: auto;
+}
+
+/* Formulario de mensajes */
+.message-form {
+    margin: 20px;
+    padding: 15px;
+    background: #f1f1f1;
+    border-radius: 8px;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* Botón de actualización de estado */
+.update-status {
+    margin: 20px;
+    padding: 15px;
+    background: #fff3cd;
+    border-radius: 8px;
+}
+
+
+
+
+/* Estilos para login y registro */
+.login-container,
+.register-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h1 {
+    color: #333;
+}
+
+label {
+    display: block;
+    text-align: left;
+    margin-top: 10px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    width: 100%;
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+.back-link {
+    display: block;
+    margin-top: 15px;
+    text-decoration: none;
+    color: #007bff;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+

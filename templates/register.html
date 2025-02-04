@@ -1,29 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar Usuario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
-    <h1>Registrar Usuario</h1>
-    <form method="POST">
-        <label for="email">Correo Electrónico:</label>
-        <input type="email" name="email" required><br>
-    
-        <label for="username">Nombre de Usuario:</label>
-        <input type="text" name="username" required><br>
-    
-        <label for="password">Contraseña:</label>
-        <input type="password" name="password" required><br>
-    
-        <label for="role">Rol:</label>
-        <select name="role">
-            <option value="directv">DirecTV</option>
-            <option value="usittel">Usittel</option>
-        </select><br>
-    
-        <button type="submit">Registrar</button>
-    </form>
-    
-    <a href="/tickets">Volver a la lista de tickets</a>
+    <div class="register-container">
+        <h1>Registrar Usuario</h1>
+        <form method="POST">
+            <label for="email">Correo Electrónico:</label>
+            <input type="email" name="email" required>
+
+            <label for="username">Nombre de Usuario:</label>
+            <input type="text" name="username" required>
+
+            <label for="password">Contraseña:</label>
+            <input type="password" name="password" required>
+
+            <label for="role">Rol:</label>
+            <select name="role">
+                <option value="directv">DirecTV</option>
+                <option value="usittel">Usittel</option>
+            </select>
+
+            <button type="submit">Registrar</button>
+        </form>
+        <a href="/tickets" class="back-link">Volver a la lista de tickets</a>
+    </div>
 </body>
+
 </html>

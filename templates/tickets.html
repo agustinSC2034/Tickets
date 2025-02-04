@@ -2,143 +2,80 @@
 <html lang="es">
 
 <head>
-    <script>
-        function showLoading() {
-            let loadingDiv = document.createElement("div");
-            loadingDiv.id = "loadingPopup";
-            loadingDiv.style.position = "fixed";
-            loadingDiv.style.top = "50%";
-            loadingDiv.style.left = "50%";
-            loadingDiv.style.transform = "translate(-50%, -50%)";
-            loadingDiv.style.padding = "20px";
-            loadingDiv.style.background = "#fff";
-            loadingDiv.style.border = "2px solid #000";
-            loadingDiv.style.zIndex = "1000";
-            loadingDiv.innerHTML = "<strong>Procesando...</strong>";
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Tickets</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <header>
+        <h1>Lista de Tickets</h1>
+        <nav>
+            <a href="/logout">Cerrar sesión</a>
+            {% if current_user.role != 'usittel' %}
+            <a href="{{ url_for('create_ticket') }}">Crear Ticket</a>
+            {% endif %}
+        </nav>
+    </header>
     
-            document.body.appendChild(loadingDiv);
-        }
-    </script>
+    <main>
+        <!-- Filtros -->
+        <form action="/tickets" method="GET" class="filters">
+            <label for="estado">Estado:</label>
+            <select name="estado" id="estado">
+                <option value="">Todos</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="en proceso">En proceso</option>
+                <option value="cerrado">Cerrado</option>
+            </select>
+            
+            <label for="prioridad">Prioridad:</label>
+            <select name="prioridad" id="prioridad">
+                <option value="">Todas</option>
+                <option value="Baja">Baja</option>
+                <option value="Media">Media</option>
+                <option value="Alta">Alta</option>
+            </select>
+            
+            <button type="submit">Filtrar</button>
+        </form>
+        
+        <table class="tickets-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tipo</th>
+                    <th>Prioridad</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr class="ticket-row {{ ticket.estado | lower }} {{ ticket.prioridad | lower }}">
+                    <td>{{ ticket.id }}</td>
+                    <td>{{ ticket.tipo }}</td>
+                    <td>{{ ticket.prioridad }}</td>
+                    <td class="estado">{{ ticket.estado }}</td>
+                    <td>
+                        <a href="{{ url_for('view_ticket', id=ticket.id) }}">Ver Ticket</a>
+                        {% if current_user.role == 'usittel' %}
+                        <form action="/delete-ticket/{{ ticket.id }}" method="POST" onsubmit="return confirmarAccion('¿Seguro que quieres eliminar este ticket?')">
+                            <button type="submit">Eliminar</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
     
     <script>
         function confirmarAccion(mensaje) {
             return confirm(mensaje);
         }
     </script>
-    
-
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Tickets</title>
-
-    <style>
-        .estado-pendiente {
-            color: white;
-            background-color: orange;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        .estado-en-proceso {
-            color: white;
-            background-color: blue;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        .estado-cerrado {
-            color: white;
-            background-color: gray;
-            padding: 5px;
-            border-radius: 5px;
-        }
-    </style>
-    
-</head>
-
-<body>
-    <h1>Lista de Tickets</h1>
-
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1>Lista de Tickets</h1>
-        <a href="/logout">Cerrar sesión</a>
-    </div>
-    
-    <!-- Filtros -->
-    <form action="/tickets" method="GET">
-        <label for="estado">Estado:</label>
-        <select name="estado" id="estado">
-            <option value="">Todos</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="en proceso">En proceso</option>
-            <option value="cerrado">Cerrado</option>
-        </select>
-    
-        <label for="prioridad">Prioridad:</label>
-        <select name="prioridad" id="prioridad">
-            <option value="">Todas</option>
-            <option value="Baja">Baja</option>
-            <option value="Media">Media</option>
-            <option value="Alta">Alta</option>
-        </select>
-    
-        <button type="submit">Filtrar</button>
-    </form>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Tipo</th>
-                <th>Descripción</th>
-                <th>Prioridad</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ticket in tickets %}
-            <tr>
-                <td>{{ ticket.id }}</td>
-                <td>{{ ticket.tipo }}</td>
-                <td>{{ ticket.descripcion }}</td>
-                <td>{{ ticket.prioridad }}</td>
-                <td>
-                    {% if ticket.estado == "pendiente" %}
-                        <span class="estado-pendiente">Pendiente</span>
-                    {% elif ticket.estado == "en proceso" %}
-                        <span class="estado-en-proceso">En proceso</span>
-                    {% elif ticket.estado == "cerrado" %}
-                        <span class="estado-cerrado">Cerrado</span>
-                    {% else %}
-                        {{ ticket.estado }}
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{{ url_for('view_ticket', id=ticket.id) }}">Ver Ticket</a>
-                    {% if current_user.role == 'usittel' %}
-                    <form action="/delete-ticket/{{ ticket.id }}" method="POST" onsubmit="return confirmarAccion('¿Seguro que quieres eliminar este ticket?')">
-                        <button type="submit">Eliminar</button>
-                    </form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    
-    <div style="margin-top: 20px;">
-        
-        <a href="/export-tickets" class="button">Exportar Tickets a CSV</a>
-        <br><br>
-
-        
-        {% if current_user.role != 'usittel' %}
-        <a href="{{ url_for('create_ticket') }}">Crear Ticket</a>
-        {% endif %}
-    </div>   
-    
-
 </body>
-
 </html>
