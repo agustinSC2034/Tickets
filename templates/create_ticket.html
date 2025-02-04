@@ -1,6 +1,46 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Ticket</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <header>
+        {% include 'header.html' %}
+        <h1>Crear un Nuevo Ticket</h1>
+        <nav>
+            <a href="/tickets" class="btn-back">Volver a la lista de tickets</a>
+        </nav>
+    </header>
+
+    <div class="form-container">
+        <h2>Ingrese los detalles del ticket</h2>
+        <form method="POST" onsubmit="showLoading()">
+            <label for="tipo">Tipo de Problema:</label>
+            <select name="tipo" id="tipo" required>
+                <option value="">Seleccione un tipo</option>
+                <option value="Conexión">Conexión</option>
+                <option value="Velocidad">Velocidad</option>
+                <option value="Corte de servicio">Corte de servicio</option>
+            </select>
+
+            <label for="descripcion">Descripción del Problema:</label>
+            <textarea id="descripcion" name="descripcion" rows="5" required></textarea>
+
+            <label for="prioridad">Prioridad:</label>
+            <select id="prioridad" name="prioridad" required>
+                <option value="Baja">Baja</option>
+                <option value="Media">Media</option>
+                <option value="Alta">Alta</option>
+            </select>
+
+            <button type="submit" class="btn-action">Crear Ticket</button>
+        </form>
+    </div>
 
     <script>
         function showLoading() {
@@ -18,54 +58,7 @@
             document.body.appendChild(loadingDiv);
         }
     </script>
-    
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Ticket</title>
-</head>
-<body>
-    <h1>Crear un nuevo ticket</h1>
- <form method="POST" onsubmit="showLoading()">
-    <label for="tipo">Tipo de problema:</label>
-    <br>
-    <select name="tipo" id="tipo" required>
-        <option value="">Seleccione un tipo</option>
-        <option value="Conexión">Conexión</option>
-        <option value="Velocidad">Velocidad</option>
-        <option value="Corte de servicio">Corte de servicio</option>
-    </select><br><br>
-    <br>
-    <label for="descripcion">Descripción:</label>
-    <br>
-    <textarea id="descripcion" name="descripcion" required></textarea>
-    <br>
-    <label for="prioridad">Prioridad:</label>
-    <br>
-    <select id="prioridad" name="prioridad" required>
-        <option value="Baja">Baja</option>
-        <option value="Media">Media</option>
-        <option value="Alta">Alta</option>
-    </select>
-    <br><br>
-    <button type="submit">Crear Ticket</button>
-</form>
-    <br>
-    <a href="/logout">Cerrar sesión</a>
-
-    <script>
-        function validarFormulario() {
-            const tipo = document.getElementById("tipo").value;
-            const descripcion = document.getElementById("descripcion").value.trim();
-            const prioridad = document.getElementById("prioridad").value;
-            const usuario = document.getElementById("usuario").value.trim();
-
-            if (!tipo || !descripcion || !prioridad || !usuario) {
-                alert("Por favor, complete todos los campos obligatorios.");
-                return false;
-            }
-            return true;
-        }
-    </script>
 </body>
+
 </html>

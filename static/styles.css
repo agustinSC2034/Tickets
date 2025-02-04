@@ -6,7 +6,7 @@ body {
 }
 
 header {
-    background-color: #333;
+    background-color: #363637;
     color: white;
     padding: 15px;
     display: flex;
@@ -63,33 +63,6 @@ header nav a {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.message {
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    max-width: 60%;
-}
-
-.directv-message {
-    background-color: #d1ecf1;
-    text-align: right;
-    margin-left: auto;
-}
-
-.usittel-message {
-    background-color: #f8d7da;
-    text-align: left;
-    margin-right: auto;
-}
-
-/* Formulario de mensajes */
-.message-form {
-    margin: 20px;
-    padding: 15px;
-    background: #f1f1f1;
-    border-radius: 8px;
-}
-
 textarea {
     width: 100%;
     padding: 10px;
@@ -122,21 +95,6 @@ textarea {
 h1 {
     color: #333;
 }
-
-label {
-    display: block;
-    text-align: left;
-    margin-top: 10px;
-}
-
-input, select {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
 button {
     width: 100%;
     background: #007bff;
@@ -163,4 +121,389 @@ button:hover {
 .back-link:hover {
     text-decoration: underline;
 }
+
+
+/* Estilos para el Header */
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.navbar nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.navbar nav ul li {
+    margin-left: 20px;
+}
+
+.navbar nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.navbar nav ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Estilos generales del header */
+.navbar {
+    background: #363637;
+    color: white;
+    padding: 15px 20px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-text{
+    color: white;
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Logo */
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo-img {
+    height: 50px;
+    margin-right: 15px;
+}
+
+/* Estilos de la navegación */
+.navbar nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.navbar nav ul li {
+    margin-left: 20px;
+}
+
+.navbar nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 8px 12px;
+    transition: background 0.3s ease;
+    border-radius: 5px;
+}
+
+.navbar nav ul li a:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Botón de cerrar sesión */
+.logout-btn {
+    background: #ff4d4d;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.logout-btn:hover {
+    background: #cc0000;
+}
+
+
+
+/* Estilo general de la tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Encabezado de la tabla */
+thead {
+    background: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+th {
+    padding: 10px;
+    cursor: pointer;
+    text-align: left;
+}
+
+th:hover {
+    background: #0056b3;
+}
+
+/* Celdas de la tabla */
+td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Colores por estado */
+.estado-pendiente {
+    background: #ffcc00;
+    color: black;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.estado-en-proceso {
+    background: #007bff;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.estado-cerrado {
+    background: #6c757d;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+/* Botones */
+.btn {
+    padding: 6px 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.btn-view {
+    background: #28a745;
+    color: white;
+}
+
+.btn-view:hover {
+    background: #218838;
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: white;
+    margin-left: 10px;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+}
+
+/* Estilizar botón de filtrado */
+.btn-filter {
+    margin: 8px 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: 0.3s ease;
+}
+
+.btn-filter:hover {
+    background-color: #0056b3;
+}
+
+/* Botones de paginación */
+.btn-pagination {
+    margin: 8px 80px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: 0.3s ease;
+}
+
+.btn-pagination:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo del texto del mensaje */
+.message-text {
+    font-size: 14px;
+}
+
+
+/* Ajustar el tamaño del contenedor del chat */
+.chat-container {
+    max-width: 85%;
+    margin: 20px auto;
+    padding: 15px;
+    border-radius: 25px;
+    background: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo de los mensajes */
+.message {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    max-width: 80%;
+    font-size: 14px;
+}
+
+/* Mensajes de Usittel (izquierda) */
+.usittel-message {
+    background-color: #007bff;
+    color: white;
+    align-self: flex-start;
+    border-radius: 10px 10px 10px 0;
+    padding: 10px;
+}
+
+/* Mensajes de Directv (derecha) */
+.directv-message {
+    background-color: #28a745;
+    color: white;
+    align-self: flex-end;
+    border-radius: 10px 10px 0 10px;
+    padding: 10px;
+}
+
+/* Estilo del usuario y fecha */
+.message-user {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Contenedor del formulario de mensajes */
+.message-form {
+    margin: 20px;
+    padding: 15px;
+    background: #f1f1f1;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* Contenedor de acciones */
+.actions-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 30px;
+}
+
+.btn-close {
+    padding: 8px 12px;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: 0.3s ease;
+}
+
+.btn-close:hover {
+    background-color: #cc0000;
+}
+
+.btn-reopen {
+    padding: 8px 12px;
+    background-color: #ffa500;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: 0.3s ease;
+}
+
+.btn-reopen:hover {
+    background-color: #e69500;
+}
+
+/* Mensaje de ticket cerrado */
+.closed-ticket-message {
+    text-align: center;
+    font-weight: bold;
+    color: #d9534f;
+    background: #f8d7da;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* Contenedor del formulario */
+.form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Estilos de los labels */
+label {
+    display: block;
+    text-align: left;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* Campos de entrada */
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Botón de acción */
+.btn-action {
+    width: 100%;
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn-action:hover {
+    background: #0056b3;
+}
+
+
+
+
+
 

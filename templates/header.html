@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header class="navbar">
+        <div class="container">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Usittel Logo" class="logo-img">
+                <h1 class="logo-text">| Sistema de Tickets</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('tickets') }}">Tickets</a></li>
+                    {% if current_user.role == 'directv' %}
+                        <li><a href="{{ url_for('create_ticket') }}">Crear Ticket</a></li>
+                    {% endif %}
+                    {% if current_user.role == 'usittel' %}
+                        <li><a href="{{ url_for('register') }}">Registrar Usuario</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('logout') }}" class="logout-btn">Cerrar Sesión</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+</body>
+</html>
