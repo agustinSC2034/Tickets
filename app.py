@@ -216,23 +216,40 @@ def update_ticket(id):
     if current_user.role != 'usittel':
         return "Acceso denegado", 403
 
-    nuevo_estado = request.form['estado']
+    nuevo_estado = request.form.get('estado')
+    if not nuevo_estado:
+        return "Error: No se proporcionó un estado válido.", 400
 
     conn = get_db_connection()
     ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
+
+    if not ticket:
+        return "Ticket no encontrado", 404
+
+    # Actualizamos el estado
     conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
+
+    # Agregar un mensaje automático en el historial
+    mensaje_estado = f"{current_user.username} ha cambiado el estado a {nuevo_estado}."
+    conn.execute(
+        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
+        (id, current_user.username, current_user.role, mensaje_estado)
+    )
+
     conn.commit()
 
-    # Obtener email del usuario creador del ticket (Directv)
+    # Enviar correo al usuario creador
     usuario_creador = ticket['usuario_creador']
     user = conn.execute('SELECT email FROM users WHERE username = ?', (usuario_creador,)).fetchone()
     conn.close()
 
     if user:
         send_email(user['email'], "Estado de tu ticket actualizado",
-                   f"El estado de tu ticket #{id} ha cambiado a {nuevo_estado}")
+                   f"El estado de tu ticket #{id} ha cambiado a {nuevo_estado}.")
 
     return redirect(url_for('view_ticket', id=id))
+
+
 
 
 
@@ -388,24 +405,30 @@ def close_ticket(id):
         return "Acceso denegado", 403
 
     conn.execute('UPDATE tickets SET estado = "cerrado" WHERE id = ?', (id,))
+
+    # Mensaje automático en el historial
+    mensaje_cierre = f"{current_user.username} ha cerrado el ticket."
+    conn.execute(
+        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
+        (id, current_user.username, current_user.role, mensaje_cierre)
+    )
+
     conn.commit()
 
-    # Notificar por correo electrónico a los usuarios correspondientes
+    # Enviar correo a los usuarios correspondientes
     usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
     directv_users = conn.execute('SELECT email FROM users WHERE role = "directv"').fetchall()
     conn.close()
 
-    # Enviar correos a los usuarios de Usittel si Directv cierra el ticket
     if current_user.role == 'directv':
         for user in usittel_users:
             send_email(user['email'], "Ticket cerrado", f"El ticket #{id} ha sido cerrado por Directv.")
-
-    # Enviar correos a los usuarios de Directv si Usittel cierra el ticket
     if current_user.role == 'usittel':
         for user in directv_users:
             send_email(user['email'], "Ticket cerrado", f"El ticket #{id} ha sido cerrado por Usittel.")
 
     return redirect(url_for('view_ticket', id=id))
+
 
 
 
@@ -435,36 +458,36 @@ def reopen_ticket(id):
         return "Acceso denegado: Solo Directv puede reabrir un ticket.", 403
 
     conn = get_db_connection()
-
-    # Verificar si el ticket está cerrado
-    ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
+    ticket = conn.execute('SELECT estado FROM tickets WHERE id = ?', (id,)).fetchone()
 
     if not ticket or ticket['estado'].lower() != 'cerrado':
         return "El ticket no está en un estado que permita reabrirse.", 400
 
     # Cambiar el estado a 'pendiente'
-    conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', ('pendiente', id))
+    conn.execute(
+        'UPDATE tickets SET estado = ? WHERE id = ?',
+        ('pendiente', id)
+    )
 
-    # Agregar un mensaje en el historial indicando que el ticket fue reabierto
+    # Mensaje automático en el historial
+    mensaje_reapertura = f"{current_user.username} ha reabierto el ticket."
     conn.execute(
         'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
-        (id, current_user.username, current_user.role, "Ha reabierto el ticket.")
+        (id, current_user.username, current_user.role, mensaje_reapertura)
     )
 
     conn.commit()
-
-    # Obtener emails de los usuarios de Usittel (NO al creador del ticket)
+    
+    # Notificar a Usittel
     usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
     conn.close()
 
-    # Enviar notificación por correo SOLO a Usittel
-    subject = f"El ticket #{id} ha sido reabierto"
-    message = f"El ticket #{id} ha sido reabierto por {current_user.username} y su estado cambió a 'Pendiente'."
-
     for user in usittel_users:
-        send_email(user['email'], subject, message)
+        send_email(user['email'], "Ticket reabierto",
+                   f"El ticket #{id} ha sido reabierto por Directv.")
 
     return redirect(url_for('view_ticket', id=id))
+
 
 
 

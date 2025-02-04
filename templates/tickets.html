@@ -20,40 +20,70 @@
         }
     </script>
     
+    <script>
+        function confirmarAccion(mensaje) {
+            return confirm(mensaje);
+        }
+    </script>
+    
 
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Tickets</title>
+
+    <style>
+        .estado-pendiente {
+            color: white;
+            background-color: orange;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .estado-en-proceso {
+            color: white;
+            background-color: blue;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .estado-cerrado {
+            color: white;
+            background-color: gray;
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+    
 </head>
 
 <body>
     <h1>Lista de Tickets</h1>
 
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Lista de Tickets</h1>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+    
     <!-- Filtros -->
-    <form action="/tickets" method="GET" onsubmit="showLoading()">
+    <form action="/tickets" method="GET">
         <label for="estado">Estado:</label>
         <select name="estado" id="estado">
-            <option value="" {% if not estado %}selected{% endif %}>Todos</option>
-            <option value="pendiente" {% if estado=='pendiente' %}selected{% endif %}>Pendiente</option>
-            <option value="en proceso" {% if estado=='en proceso' %}selected{% endif %}>En proceso</option>
-            <option value="cerrado" {% if estado=='cerrado' %}selected{% endif %}>Cerrado</option>
+            <option value="">Todos</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en proceso">En proceso</option>
+            <option value="cerrado">Cerrado</option>
         </select>
-        
-        
     
         <label for="prioridad">Prioridad:</label>
         <select name="prioridad" id="prioridad">
-            <option value="" {% if not prioridad %}selected{% endif %}>Todas</option>
-            <option value="Baja" {% if prioridad == 'Baja' %}selected{% endif %}>Baja</option>
-            <option value="Media" {% if prioridad == 'Media' %}selected{% endif %}>Media</option>
-            <option value="Alta" {% if prioridad == 'Alta' %}selected{% endif %}>Alta</option>
+            <option value="">Todas</option>
+            <option value="Baja">Baja</option>
+            <option value="Media">Media</option>
+            <option value="Alta">Alta</option>
         </select>
     
         <button type="submit">Filtrar</button>
     </form>
     
-
     <table>
         <thead>
             <tr>
@@ -62,52 +92,53 @@
                 <th>Descripción</th>
                 <th>Prioridad</th>
                 <th>Estado</th>
-                <th>Fecha de Creación</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             {% for ticket in tickets %}
             <tr>
-                <td>{{ ticket['id'] }}</td>
-                <td>{{ ticket['tipo'] }}</td>
-                <td>{{ ticket['descripcion'] }}</td>
-                <td>{{ ticket['prioridad'] }}</td>
-                <td>{{ ticket['estado'] }}</td>
-                <td>{{ ticket['fecha_creacion'] }}</td>
+                <td>{{ ticket.id }}</td>
+                <td>{{ ticket.tipo }}</td>
+                <td>{{ ticket.descripcion }}</td>
+                <td>{{ ticket.prioridad }}</td>
                 <td>
+                    {% if ticket.estado == "pendiente" %}
+                        <span class="estado-pendiente">Pendiente</span>
+                    {% elif ticket.estado == "en proceso" %}
+                        <span class="estado-en-proceso">En proceso</span>
+                    {% elif ticket.estado == "cerrado" %}
+                        <span class="estado-cerrado">Cerrado</span>
+                    {% else %}
+                        {{ ticket.estado }}
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('view_ticket', id=ticket.id) }}">Ver Ticket</a>
                     {% if current_user.role == 'usittel' %}
-                    <form action="/delete-ticket/{{ ticket['id'] }}" method="POST" style="display:inline;">
+                    <form action="/delete-ticket/{{ ticket.id }}" method="POST" onsubmit="return confirmarAccion('¿Seguro que quieres eliminar este ticket?')">
                         <button type="submit">Eliminar</button>
                     </form>
                     {% endif %}
-                    <a href="{{ url_for('view_ticket', id=ticket['id']) }}">Ver Ticket</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    
 
+    
     <div style="margin-top: 20px;">
-        <!-- Exportar Tickets a CSV -->
+        
         <a href="/export-tickets" class="button">Exportar Tickets a CSV</a>
         <br><br>
 
-        <!-- Cerrar sesión -->
-        <a href="/logout">Cerrar sesión</a>
-        <br><br>
-
-        <!-- Mostrar "Crear Ticket" solo si el usuario no es 'usittel' -->
+        
         {% if current_user.role != 'usittel' %}
         <a href="{{ url_for('create_ticket') }}">Crear Ticket</a>
         {% endif %}
+    </div>   
+    
 
-        <!-- Mostrar "Registrar Usuario" solo si el usuario es 'usittel' -->
-        {% if current_user.role == 'usittel' %}
-        <a href="{{ url_for('register') }}">Registrar Usuario</a>
-        {% endif %}
-    </div>
 </body>
 
 </html>
