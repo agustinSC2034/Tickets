@@ -536,6 +536,30 @@ input, select, textarea {
     color: black;
 }
 
+.toast-container {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+}
+
+.toast {
+    background: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.toast-error {
+    background: #dc3545;
+}
+
+.toast-success {
+    background: #28a745;
+}
 
 
 

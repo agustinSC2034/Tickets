@@ -225,7 +225,21 @@ def update_ticket(id):
 
     conn = get_db_connection()
     ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
+
+    if not ticket:
+        flash("El ticket no existe.", "error")
+        return redirect(url_for('tickets'))
+
+    # Actualizar el estado del ticket
     conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
+
+    # Guardar mensaje en el chat indicando el cambio de estado
+    mensaje_estado = f"{current_user.username} ha cambiado el estado del ticket a {nuevo_estado}."
+    conn.execute(
+        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
+        (id, current_user.username, current_user.role, mensaje_estado)
+    )
+
     conn.commit()
 
     # Enviar notificación de éxito
@@ -241,6 +255,7 @@ def update_ticket(id):
                    f"El estado de tu ticket #{id} ha cambiado a {nuevo_estado}")
 
     return redirect(url_for('view_ticket', id=id))
+
 
 
 
@@ -399,12 +414,36 @@ def close_ticket(id):
         flash("Acceso denegado.", "error")
         return redirect(url_for('tickets'))
 
+    # Cerrar ticket
     conn.execute('UPDATE tickets SET estado = "cerrado" WHERE id = ?', (id,))
+    
+    # Guardar mensaje en el chat
+    mensaje_cierre = f"{current_user.username} ha cerrado el ticket."
+    conn.execute(
+        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
+        (id, current_user.username, current_user.role, mensaje_cierre)
+    )
+
     conn.commit()
 
-    flash(f"Ticket #{id} cerrado correctamente.", "success")
+    # Notificar por correo electrónico
+    usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
+    directv_users = conn.execute('SELECT email FROM users WHERE role = "directv"').fetchall()
+    conn.close()
 
+    # Enviar correos a Usittel si Directv cierra el ticket
+    if current_user.role == 'directv':
+        for user in usittel_users:
+            send_email(user['email'], "Ticket cerrado", f"El ticket #{id} ha sido cerrado por Directv.")
+
+    # Enviar correos a Directv si Usittel cierra el ticket
+    if current_user.role == 'usittel':
+        for user in directv_users:
+            send_email(user['email'], "Ticket cerrado", f"El ticket #{id} ha sido cerrado por Usittel.")
+
+    flash(f"Ticket #{id} cerrado correctamente.", "success")
     return redirect(url_for('view_ticket', id=id))
+
 
 
 

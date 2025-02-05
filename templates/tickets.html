@@ -9,6 +9,11 @@
 </head>
 
 <body>
+    {% extends "base.html" %}
+{% block content %}
+<!-- Contenido específico de la página -->
+
+
     <header>
         {% include 'header.html' %}
         <h1>Lista de Tickets</h1>
@@ -135,6 +140,7 @@
             showPage(currentPage);
         });
     </script>
+    {% endblock %}
 </body>
 
 </html>

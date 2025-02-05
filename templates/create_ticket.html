@@ -9,7 +9,11 @@
 </head>
 
 <body>
+    {% extends "base.html" %}
+{% block content %}
     <header>
+        
+<!-- Contenido específico de la página -->
         {% include 'header.html' %}
         <h1>Crear un Nuevo Ticket</h1>
         <nav>
@@ -58,7 +62,7 @@
             document.body.appendChild(loadingDiv);
         }
     </script>
-
+{% endblock %}
 </body>
 
 </html>
