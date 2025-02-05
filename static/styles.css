@@ -502,6 +502,40 @@ input, select, textarea {
     background: #0056b3;
 }
 
+/* Contenedor de notificaciones */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Estilos generales de las notificaciones */
+.toast {
+    padding: 10px 15px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* Tipos de notificaciones */
+.toast-success {
+    background-color: #28a745;
+}
+
+.toast-error {
+    background-color: #dc3545;
+}
+
+.toast-warning {
+    background-color: #ffc107;
+    color: black;
+}
+
 
 
 

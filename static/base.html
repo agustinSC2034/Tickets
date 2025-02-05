@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Tickets{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        {% include 'header.html' %}
+    </header>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="toast-container">
+                    {% for category, message in messages %}
+                        <div class="toast toast-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        // Auto cerrar las notificaciones después de 3 segundos
+        setTimeout(() => {
+            const toasts = document.querySelectorAll(".toast");
+            toasts.forEach(toast => {
+                toast.style.opacity = "0";
+                setTimeout(() => toast.remove(), 500);
+            });
+        }, 3000);
+    </script>
+</body>
+</html>

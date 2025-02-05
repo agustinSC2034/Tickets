@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 import csv
 from flask import Response
@@ -92,7 +92,8 @@ def login():
 @login_required
 def create_ticket():
     if current_user.role == 'usittel':
-        return "Acceso denegado. Usittel no puede crear tickets.", 403
+        flash("Acceso denegado. Usittel no puede crear tickets.", "error")
+        return redirect(url_for('tickets'))
 
     if request.method == 'POST':
         tipo = request.form['tipo']
@@ -111,7 +112,10 @@ def create_ticket():
         usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
         conn.close()
 
-        # Enviar notificación a Usittel
+        # Enviar notificación de éxito
+        flash("Ticket creado exitosamente.", "success")
+
+        # Enviar notificación por correo a Usittel
         for user in usittel_users:
             send_email(user['email'], "Nuevo Ticket Creado",
                        f"Se ha creado un nuevo ticket:\n\n"
@@ -120,7 +124,7 @@ def create_ticket():
                        f"Descripción: {descripcion}\n\n"
                        f"Creado por: {usuario_creador}")
 
-        return redirect('/tickets')
+        return redirect(url_for('tickets'))
 
     return render_template('create_ticket.html')
 
@@ -214,40 +218,30 @@ def tickets():
 @login_required
 def update_ticket(id):
     if current_user.role != 'usittel':
-        return "Acceso denegado", 403
+        flash("Acceso denegado", "error")
+        return redirect(url_for('tickets'))
 
-    nuevo_estado = request.form.get('estado')
-    if not nuevo_estado:
-        return "Error: No se proporcionó un estado válido.", 400
+    nuevo_estado = request.form['estado']
 
     conn = get_db_connection()
     ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
-
-    if not ticket:
-        return "Ticket no encontrado", 404
-
-    # Actualizamos el estado
     conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', (nuevo_estado, id))
-
-    # Agregar un mensaje automático en el historial
-    mensaje_estado = f"{current_user.username} ha cambiado el estado a {nuevo_estado}."
-    conn.execute(
-        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
-        (id, current_user.username, current_user.role, mensaje_estado)
-    )
-
     conn.commit()
 
-    # Enviar correo al usuario creador
+    # Enviar notificación de éxito
+    flash(f"Estado del ticket #{id} actualizado a {nuevo_estado}.", "success")
+
+    # Notificar por correo
     usuario_creador = ticket['usuario_creador']
     user = conn.execute('SELECT email FROM users WHERE username = ?', (usuario_creador,)).fetchone()
     conn.close()
 
     if user:
         send_email(user['email'], "Estado de tu ticket actualizado",
-                   f"El estado de tu ticket #{id} ha cambiado a {nuevo_estado}.")
+                   f"El estado de tu ticket #{id} ha cambiado a {nuevo_estado}")
 
     return redirect(url_for('view_ticket', id=id))
+
 
 
 
@@ -391,7 +385,6 @@ def export_tickets():
 
 
 
-# Cerrar tickets de parte de Directv
 @app.route('/ticket/<int:id>/close', methods=['POST'])
 @login_required
 def close_ticket(id):
@@ -399,36 +392,19 @@ def close_ticket(id):
     ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
 
     if not ticket:
-        return "El ticket no existe", 404
+        flash("El ticket no existe.", "error")
+        return redirect(url_for('tickets'))
 
     if current_user.role not in ['directv', 'usittel']:
-        return "Acceso denegado", 403
+        flash("Acceso denegado.", "error")
+        return redirect(url_for('tickets'))
 
     conn.execute('UPDATE tickets SET estado = "cerrado" WHERE id = ?', (id,))
-
-    # Mensaje automático en el historial
-    mensaje_cierre = f"{current_user.username} ha cerrado el ticket."
-    conn.execute(
-        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
-        (id, current_user.username, current_user.role, mensaje_cierre)
-    )
-
     conn.commit()
 
-    # Enviar correo a los usuarios correspondientes
-    usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
-    directv_users = conn.execute('SELECT email FROM users WHERE role = "directv"').fetchall()
-    conn.close()
-
-    if current_user.role == 'directv':
-        for user in usittel_users:
-            send_email(user['email'], "Ticket cerrado", f"El ticket #{id} ha sido cerrado por Directv.")
-    if current_user.role == 'usittel':
-        for user in directv_users:
-            send_email(user['email'], "Ticket cerrado", f"El ticket #{id} ha sido cerrado por Usittel.")
+    flash(f"Ticket #{id} cerrado correctamente.", "success")
 
     return redirect(url_for('view_ticket', id=id))
-
 
 
 
