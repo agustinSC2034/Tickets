@@ -445,24 +445,11 @@ def close_ticket(id):
     return redirect(url_for('view_ticket', id=id))
 
 
+@app.route('/test-notification')
+def test_notification():
+    flash("¡Esta es una notificación de prueba!", "success")
+    return redirect(url_for('tickets'))
 
-
-# historial ticket
-@app.route('/ticket-history/<int:id>')
-@login_required
-def ticket_history(id):
-    conn = get_db_connection()
-    ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (id,)).fetchone()
-    historial = conn.execute(
-        'SELECT * FROM historial WHERE ticket_id = ? ORDER BY fecha DESC',
-        (id,)
-    ).fetchall()
-    conn.close()
-
-    if not ticket:
-        return "El ticket no existe", 404
-
-    return render_template('ticket_history.html', ticket=ticket, historial=historial)
 
 
 # reabrir tickets

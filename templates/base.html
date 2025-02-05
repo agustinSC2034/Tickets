@@ -8,20 +8,11 @@
 </head>
 <body>
     <header>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="toast-container">
-                {% for category, message in messages %}
-                    <div class="toast toast-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
-    
-
+        {% include 'header.html' %}
     </header>
-
+    
     <div class="container">
+        <!-- Notificaciones Flash -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="toast-container">
@@ -31,19 +22,19 @@
                 </div>
             {% endif %}
         {% endwith %}
-
+    
         {% block content %}{% endblock %}
     </div>
-
+    
     <script>
         // Auto cerrar las notificaciones después de 3 segundos
         setTimeout(() => {
-            const toasts = document.querySelectorAll(".toast");
-            toasts.forEach(toast => {
+            document.querySelectorAll(".toast").forEach(toast => {
                 toast.style.opacity = "0";
                 setTimeout(() => toast.remove(), 500);
             });
         }, 3000);
     </script>
+    
 </body>
 </html>

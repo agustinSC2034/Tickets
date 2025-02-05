@@ -502,6 +502,8 @@ input, select, textarea {
     background: #0056b3;
 }
 
+
+
 /* Contenedor de notificaciones */
 .toast-container {
     position: fixed;
@@ -515,11 +517,12 @@ input, select, textarea {
 
 /* Estilos generales de las notificaciones */
 .toast {
-    padding: 10px 15px;
+    padding: 12px 15px;
     border-radius: 5px;
     color: white;
     font-weight: bold;
     transition: opacity 0.5s ease-in-out;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Tipos de notificaciones */
@@ -535,33 +538,3 @@ input, select, textarea {
     background-color: #ffc107;
     color: black;
 }
-
-.toast-container {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
-}
-
-.toast {
-    background: #007bff;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    opacity: 1;
-    transition: opacity 0.5s ease-in-out;
-}
-
-.toast-error {
-    background: #dc3545;
-}
-
-.toast-success {
-    background: #28a745;
-}
-
-
-
-
-
