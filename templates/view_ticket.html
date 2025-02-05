@@ -1,30 +1,15 @@
-<!DOCTYPE html>
-<html lang="es">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ver Ticket</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-
-<body>
-    {% extends "base.html" %}
 {% block content %}
 <!-- Contenido específico de la página -->
 
+<h1>Detalles del Ticket #{{ ticket['id'] }}</h1>
+<nav>
+    <a href="/tickets" class="btn-back">Volver a la lista de tickets</a>
+</nav>
 
-    <header>
-        {% include 'header.html' %}
-        <h1>Detalles del Ticket #{{ ticket['id'] }}</h1>
-        <nav>
-            <a href="/tickets" class="btn-back">Volver a la lista de tickets</a>
-        </nav>
-    </header>
+<div style="margin: 3%">
 
-    <div style="margin: 3%">
-
-    
     <div class="ticket-details">
         <p><strong>Tipo:</strong> {{ ticket['tipo'] }}</p>
         <p><strong>Descripción:</strong> {{ ticket['descripcion'] }}</p>
@@ -73,13 +58,13 @@
             <button type="submit" class="btn-action">Actualizar</button>
         </form>
         {% endif %}
-    
-        {% if current_user.role in 'directv' and ticket.estado != 'cerrado' %}
+
+        {% if current_user.role == 'directv' and ticket.estado != 'cerrado' %}
         <form action="{{ url_for('close_ticket', id=ticket.id) }}" method="POST">
             <button type="submit" class="btn-close">Cerrar Ticket</button>
         </form>
         {% endif %}
-    
+
         {% if current_user.role == 'directv' and ticket.estado == 'cerrado' %}
         <form method="POST" action="{{ url_for('reopen_ticket', id=ticket.id) }}">
             <button type="submit" class="btn-reopen">Reabrir Ticket</button>
@@ -88,6 +73,3 @@
     </div>
 </div>
 {% endblock %}
-</body>
-
-</html>

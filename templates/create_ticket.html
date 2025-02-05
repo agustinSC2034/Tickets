@@ -1,68 +1,53 @@
-<!DOCTYPE html>
-<html lang="es">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Ticket</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-
-<body>
-    {% extends "base.html" %}
 {% block content %}
-    <header>
-        
 <!-- Contenido específico de la página -->
-        {% include 'header.html' %}
-        <h1>Crear un Nuevo Ticket</h1>
-        <nav>
-            <a href="/tickets" class="btn-back">Volver a la lista de tickets</a>
-        </nav>
-    </header>
 
-    <div class="form-container">
-        <h2>Ingrese los detalles del ticket</h2>
-        <form method="POST" onsubmit="showLoading()">
-            <label for="tipo">Tipo de Problema:</label>
-            <select name="tipo" id="tipo" required>
-                <option value="">Seleccione un tipo</option>
-                <option value="Conexión">Conexión</option>
-                <option value="Velocidad">Velocidad</option>
-                <option value="Corte de servicio">Corte de servicio</option>
-            </select>
+<h1>Crear un Nuevo Ticket</h1>
+<nav>
+    <a href="/tickets" class="btn-back">Volver a la lista de tickets</a>
+</nav>
 
-            <label for="descripcion">Descripción del Problema:</label>
-            <textarea id="descripcion" name="descripcion" rows="5" required></textarea>
+<div class="form-container">
+    <h2>Ingrese los detalles del ticket</h2>
+    <form method="POST" onsubmit="showLoading()">
+        <label for="tipo">Tipo de Problema:</label>
+        <select name="tipo" id="tipo" required>
+            <option value="">Seleccione un tipo</option>
+            <option value="Conexión">Conexión</option>
+            <option value="Velocidad">Velocidad</option>
+            <option value="Corte de servicio">Corte de servicio</option>
+        </select>
 
-            <label for="prioridad">Prioridad:</label>
-            <select id="prioridad" name="prioridad" required>
-                <option value="Baja">Baja</option>
-                <option value="Media">Media</option>
-                <option value="Alta">Alta</option>
-            </select>
+        <label for="descripcion">Descripción del Problema:</label>
+        <textarea id="descripcion" name="descripcion" rows="5" required></textarea>
 
-            <button type="submit" class="btn-action">Crear Ticket</button>
-        </form>
-    </div>
+        <label for="prioridad">Prioridad:</label>
+        <select id="prioridad" name="prioridad" required>
+            <option value="Baja">Baja</option>
+            <option value="Media">Media</option>
+            <option value="Alta">Alta</option>
+        </select>
 
-    <script>
-        function showLoading() {
-            let loadingDiv = document.createElement("div");
-            loadingDiv.id = "loadingMessage";
-            loadingDiv.innerHTML = "<p>Procesando...</p>";
-            loadingDiv.style.position = "fixed";
-            loadingDiv.style.top = "50%";
-            loadingDiv.style.left = "50%";
-            loadingDiv.style.transform = "translate(-50%, -50%)";
-            loadingDiv.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-            loadingDiv.style.color = "white";
-            loadingDiv.style.padding = "20px";
-            loadingDiv.style.borderRadius = "10px";
-            document.body.appendChild(loadingDiv);
-        }
-    </script>
+        <button type="submit" class="btn-action">Crear Ticket</button>
+    </form>
+</div>
+
+<script>
+    function showLoading() {
+        let loadingDiv = document.createElement("div");
+        loadingDiv.id = "loadingMessage";
+        loadingDiv.innerHTML = "<p>Procesando...</p>";
+        loadingDiv.style.position = "fixed";
+        loadingDiv.style.top = "50%";
+        loadingDiv.style.left = "50%";
+        loadingDiv.style.transform = "translate(-50%, -50%)";
+        loadingDiv.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+        loadingDiv.style.color = "white";
+        loadingDiv.style.padding = "20px";
+        loadingDiv.style.borderRadius = "10px";
+        document.body.appendChild(loadingDiv);
+    }
+</script>
+
 {% endblock %}
-</body>
-
-</html>

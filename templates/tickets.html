@@ -1,146 +1,130 @@
-<!DOCTYPE html>
-<html lang="es">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Tickets</title>
-    <link rel="stylesheet" href="/static/styles.css">
-</head>
+{% block title %}Lista de Tickets{% endblock %}
 
-<body>
-    {% extends "base.html" %}
 {% block content %}
-<!-- Contenido específico de la página -->
 
+<header>
+    <h1>Lista de Tickets</h1>
+    <nav>
+        <a href="/logout">Cerrar sesión</a>
+        {% if current_user.role != 'usittel' %}
+        <a href="{{ url_for('create_ticket') }}">Crear Ticket</a>
+        {% endif %}
+    </nav>
+</header>
 
-    <header>
-        {% include 'header.html' %}
-        <h1>Lista de Tickets</h1>
-        <nav>
-            <a href="/logout">Cerrar sesión</a>
-            {% if current_user.role != 'usittel' %}
-            <a href="{{ url_for('create_ticket') }}">Crear Ticket</a>
-            {% endif %}
-        </nav>
-    </header>
+<main>
+    <!-- Filtros -->
+    <form action="/tickets" method="GET" style="display: flex; align-items: center; gap: 10px;">
+        <label for="estado">Estado:</label>
+        <select name="estado" id="estado">
+            <option value="">Todos</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en proceso">En proceso</option>
+            <option value="cerrado">Cerrado</option>
+        </select>
 
-    <main>
-        <!-- Filtros -->
-        <form action="/tickets" method="GET" style="display: flex; align-items: center; gap: 10px;">
-            <label for="estado">Estado:</label>
-            <select name="estado" id="estado">
-                <option value="">Todos</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="en proceso">En proceso</option>
-                <option value="cerrado">Cerrado</option>
-            </select>
-        
-            <label for="prioridad">Prioridad:</label>
-            <select name="prioridad" id="prioridad">
-                <option value="">Todas</option>
-                <option value="Baja">Baja</option>
-                <option value="Media">Media</option>
-                <option value="Alta">Alta</option>
-            </select>
-        
-            <button type="submit" class="btn-filter">Filtrar</button>
-        </form>
-        
-        <table id="ticketsTable">
-            <thead>
-                <tr>
-                    <th onclick="sortTable(0)">ID ⬍</th>
-                    <th onclick="sortTable(1)">Tipo ⬍</th>
-                    <th onclick="sortTable(2)">Prioridad ⬍</th>
-                    <th onclick="sortTable(3)">Estado ⬍</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for ticket in tickets %}
-                <tr class="ticket-row {{ ticket.estado }}">
-                    <td>{{ ticket.id }}</td>
-                    <td>{{ ticket.tipo }}</td>
-                    <td>{{ ticket.prioridad }}</td>
-                    <td>
-                        <span class="estado estado-{{ ticket.estado|lower }}">
-                            {{ ticket.estado }}
-                        </span>
-                    </td>
-                    <td>
-                        <a href="{{ url_for('view_ticket', id=ticket.id) }}" class="btn btn-view">Ver Ticket</a>
-                        {% if current_user.role == 'usittel' %}
-                        <form action="/delete-ticket/{{ ticket.id }}" method="POST"
-                            onsubmit="return confirmarAccion('¿Seguro que quieres eliminar este ticket?')">
-                            <button type="submit" class="btn btn-delete">Eliminar</button>
-                        </form>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <div style="text-align: center; margin-top: 30px; display: flex; justify-content: center; gap: 2px; margin-left: 30%; margin-right: 30%;">
-            <button id="prevPage" class="btn-pagination">⬅ Anterior</button>
-            <span id="pageNumber" style="font-weight: bold;">Página 1</span>
-            <button id="nextPage" class="btn-pagination">Siguiente ➡</button>
-        </div>
-        
+        <label for="prioridad">Prioridad:</label>
+        <select name="prioridad" id="prioridad">
+            <option value="">Todas</option>
+            <option value="Baja">Baja</option>
+            <option value="Media">Media</option>
+            <option value="Alta">Alta</option>
+        </select>
 
-    </main>
+        <button type="submit" class="btn-filter">Filtrar</button>
+    </form>
 
-    <script>
-        function confirmarAccion(mensaje) {
-            return confirm(mensaje);
-        }
-        function sortTable(columnIndex) {
-            let table = document.getElementById("ticketsTable");
-            let rows = Array.from(table.rows).slice(1); // Omitimos el encabezado
-            let isAscending = table.rows[0].cells[columnIndex].getAttribute("data-order") === "asc";
+    <table id="ticketsTable">
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">ID ⬍</th>
+                <th onclick="sortTable(1)">Tipo ⬍</th>
+                <th onclick="sortTable(2)">Prioridad ⬍</th>
+                <th onclick="sortTable(3)">Estado ⬍</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr class="ticket-row {{ ticket.estado }}">
+                <td>{{ ticket.id }}</td>
+                <td>{{ ticket.tipo }}</td>
+                <td>{{ ticket.prioridad }}</td>
+                <td>
+                    <span class="estado estado-{{ ticket.estado|lower }}">
+                        {{ ticket.estado }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('view_ticket', id=ticket.id) }}" class="btn btn-view">Ver Ticket</a>
+                    {% if current_user.role == 'usittel' %}
+                    <form action="/delete-ticket/{{ ticket.id }}" method="POST"
+                        onsubmit="return confirmarAccion('¿Seguro que quieres eliminar este ticket?')">
+                        <button type="submit" class="btn btn-delete">Eliminar</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-            rows.sort((rowA, rowB) => {
-                let cellA = rowA.cells[columnIndex].textContent.trim().toLowerCase();
-                let cellB = rowB.cells[columnIndex].textContent.trim().toLowerCase();
+    <div style="text-align: center; margin-top: 30px; display: flex; justify-content: center; gap: 2px;">
+        <button id="prevPage" class="btn-pagination">⬅ Anterior</button>
+        <span id="pageNumber" style="font-weight: bold;">Página 1</span>
+        <button id="nextPage" class="btn-pagination">Siguiente ➡</button>
+    </div>
+</main>
 
-                return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
-            });
+<script>
+    function confirmarAccion(mensaje) {
+        return confirm(mensaje);
+    }
 
-            table.rows[0].cells[columnIndex].setAttribute("data-order", isAscending ? "desc" : "asc");
+    function sortTable(columnIndex) {
+        let table = document.getElementById("ticketsTable");
+        let rows = Array.from(table.rows).slice(1);
+        let isAscending = table.rows[0].cells[columnIndex].getAttribute("data-order") === "asc";
 
-            // Reorganizar las filas
-            rows.forEach(row => table.appendChild(row));
-        }
-        document.addEventListener("DOMContentLoaded", function () {
-            let table = document.getElementById("ticketsTable");
-            let rows = Array.from(table.getElementsByTagName("tbody")[0].rows);
-            let rowsPerPage = 5;
-            let currentPage = 1;
-
-            function showPage(page) {
-                let start = (page - 1) * rowsPerPage;
-                let end = start + rowsPerPage;
-
-                rows.forEach((row, index) => {
-                    row.style.display = index >= start && index < end ? "" : "none";
-                });
-
-                document.getElementById("pageNumber").textContent = `Página ${page}`;
-            }
-
-            function changePage(delta) {
-                let totalPages = Math.ceil(rows.length / rowsPerPage);
-                currentPage = Math.min(Math.max(1, currentPage + delta), totalPages);
-                showPage(currentPage);
-            }
-
-            document.getElementById("prevPage").addEventListener("click", () => changePage(-1));
-            document.getElementById("nextPage").addEventListener("click", () => changePage(1));
-
-            showPage(currentPage);
+        rows.sort((rowA, rowB) => {
+            let cellA = rowA.cells[columnIndex].textContent.trim().toLowerCase();
+            let cellB = rowB.cells[columnIndex].textContent.trim().toLowerCase();
+            return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
         });
-    </script>
-    {% endblock %}
-</body>
 
-</html>
+        table.rows[0].cells[columnIndex].setAttribute("data-order", isAscending ? "desc" : "asc");
+
+        rows.forEach(row => table.appendChild(row));
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        let table = document.getElementById("ticketsTable");
+        let rows = Array.from(table.getElementsByTagName("tbody")[0].rows);
+        let rowsPerPage = 5;
+        let currentPage = 1;
+
+        function showPage(page) {
+            let start = (page - 1) * rowsPerPage;
+            let end = start + rowsPerPage;
+            rows.forEach((row, index) => {
+                row.style.display = index >= start && index < end ? "" : "none";
+            });
+            document.getElementById("pageNumber").textContent = `Página ${page}`;
+        }
+
+        function changePage(delta) {
+            let totalPages = Math.ceil(rows.length / rowsPerPage);
+            currentPage = Math.min(Math.max(1, currentPage + delta), totalPages);
+            showPage(currentPage);
+        }
+
+        document.getElementById("prevPage").addEventListener("click", () => changePage(-1));
+        document.getElementById("nextPage").addEventListener("click", () => changePage(1));
+
+        showPage(currentPage);
+    });
+</script>
+
+{% endblock %}
