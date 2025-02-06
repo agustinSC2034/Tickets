@@ -6,6 +6,7 @@
     <title>{% block title %}Sistema de Tickets{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
     <header>
         {% include 'header.html' %}
@@ -25,6 +26,56 @@
     
         {% block content %}{% endblock %}
     </div>
+
+<!-- Modal de Confirmación Universal -->
+<div id="confirmModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <p id="confirmMessage">¿Estás seguro de realizar esta acción?</p>
+        <div class="modal-actions">
+            <button id="cancelButton" class="btn-cancel">Cancelar</button>
+            <button id="confirmButton" class="btn-confirm">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Script para manejar el modal -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById("confirmModal");
+        const confirmMessage = document.getElementById("confirmMessage");
+        const confirmButton = document.getElementById("confirmButton");
+        const cancelButton = document.getElementById("cancelButton");
+        let formToSubmit = null;
+
+        function setupModal(buttonClass, message) {
+            document.querySelectorAll(buttonClass).forEach(button => {
+                button.addEventListener("click", function (event) {
+                    event.preventDefault();
+                    confirmMessage.textContent = message;
+                    formToSubmit = this.closest("form");
+                    modal.style.display = "flex";
+                });
+            });
+        }
+
+        setupModal(".confirm-delete", "¿Seguro que deseas eliminar este ticket?");
+        setupModal(".confirm-close", "¿Seguro que deseas cerrar este ticket?");
+        setupModal(".confirm-reopen", "¿Seguro que deseas reabrir este ticket?");
+        setupModal(".confirm-update", "¿Seguro que deseas actualizar el estado de este ticket?");
+
+        cancelButton.addEventListener("click", function () {
+            modal.style.display = "none";
+        });
+
+        confirmButton.addEventListener("click", function () {
+            if (formToSubmit) {
+                formToSubmit.submit();
+            }
+            modal.style.display = "none";
+        });
+    });
+</script>
+
     
     <script>
         // Auto cerrar las notificaciones después de 3 segundos

@@ -60,9 +60,8 @@
                 <td>
                     <a href="{{ url_for('view_ticket', id=ticket.id) }}" class="btn btn-view">Ver Ticket</a>
                     {% if current_user.role == 'usittel' %}
-                    <form action="/delete-ticket/{{ ticket.id }}" method="POST"
-                        onsubmit="return confirmarAccion('¿Seguro que quieres eliminar este ticket?')">
-                        <button type="submit" class="btn btn-delete">Eliminar</button>
+                    <form action="/delete-ticket/{{ ticket.id }}" method="POST">
+                        <button type="button" class="btn btn-delete confirm-delete">Eliminar</button>
                     </form>
                     {% endif %}
                 </td>

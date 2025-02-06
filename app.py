@@ -271,8 +271,10 @@ def delete_ticket(id):
 
     conn = get_db_connection()
     conn.execute('DELETE FROM tickets WHERE id = ?', (id,))
+    
     conn.commit()
     conn.close()
+    
     return redirect('/tickets')
 
 

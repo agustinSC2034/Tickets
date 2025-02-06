@@ -2,7 +2,6 @@
 
 {% block content %}
 <!-- Contenido específico de la página -->
-
 <h1>Detalles del Ticket #{{ ticket['id'] }}</h1>
 <nav>
     <a href="/tickets" class="btn-back">Volver a la lista de tickets</a>
@@ -26,7 +25,8 @@
     <div class="chat-container">
         {% for message in messages %}
         <div class="message {% if message['rol'] == 'usittel' %}usittel-message{% else %}directv-message{% endif %}">
-            <p class="message-user"><strong>{{ message['usuario'] }} ({{ message['rol'] }})</strong> - {{ message['fecha'] }}</p>
+            <p class="message-user"><strong>{{ message['usuario'] }} ({{ message['rol'] }})</strong> - {{
+                message['fecha'] }}</p>
             <p class="message-text">{{ message['mensaje'] }}</p>
         </div>
         {% endfor %}
@@ -47,27 +47,30 @@
 
     <!-- Contenedor de acciones -->
     <div class="actions-container">
+        <!-- Botón para cerrar ticket -->
+        {% if current_user.role == 'directv' and ticket.estado != 'cerrado' %}
+        <form action="{{ url_for('close_ticket', id=ticket.id) }}" method="POST">
+            <button type="button" class="btn-close confirm-close">Cerrar Ticket</button>
+        </form>
+        {% endif %}
+
+        <!-- Botón para reabrir ticket -->
+        {% if current_user.role == 'directv' and ticket.estado == 'cerrado' %}
+        <form method="POST" action="{{ url_for('reopen_ticket', id=ticket.id) }}">
+            <button type="button" class="btn-reopen confirm-reopen">Reabrir Ticket</button>
+        </form>
+        {% endif %}
+
+        <!-- Botón para actualizar estado -->
         {% if current_user.role == 'usittel' and ticket.estado != 'cerrado' %}
         <form action="{{ url_for('update_ticket', id=ticket.id) }}" method="POST">
             <label for="estado">Actualizar Estado:</label>
             <select name="estado" required>
-                <option value="pendiente" {% if ticket.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
-                <option value="en proceso" {% if ticket.estado == 'en proceso' %}selected{% endif %}>En proceso</option>
-                <option value="cerrado" {% if ticket.estado == 'cerrado' %}selected{% endif %}>Cerrado</option>
+                <option value="pendiente" {% if ticket.estado=='pendiente' %}selected{% endif %}>Pendiente</option>
+                <option value="en proceso" {% if ticket.estado=='en proceso' %}selected{% endif %}>En proceso</option>
+                <option value="cerrado" {% if ticket.estado=='cerrado' %}selected{% endif %}>Cerrado</option>
             </select>
-            <button type="submit" class="btn-action">Actualizar</button>
-        </form>
-        {% endif %}
-
-        {% if current_user.role == 'directv' and ticket.estado != 'cerrado' %}
-        <form action="{{ url_for('close_ticket', id=ticket.id) }}" method="POST">
-            <button type="submit" class="btn-close">Cerrar Ticket</button>
-        </form>
-        {% endif %}
-
-        {% if current_user.role == 'directv' and ticket.estado == 'cerrado' %}
-        <form method="POST" action="{{ url_for('reopen_ticket', id=ticket.id) }}">
-            <button type="submit" class="btn-reopen">Reabrir Ticket</button>
+            <button type="button" class="btn-action confirm-update">Actualizar</button>
         </form>
         {% endif %}
     </div>
