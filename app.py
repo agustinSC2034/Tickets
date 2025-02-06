@@ -94,6 +94,7 @@ def login():
 
 
 # Ruta para crear tickets
+# Ruta para crear tickets
 @app.route('/create_ticket', methods=['GET', 'POST'])
 @login_required
 def create_ticket():
@@ -109,7 +110,7 @@ def create_ticket():
 
         conn = get_db_connection()
         conn.execute(
-            'INSERT INTO tickets (tipo, descripcion, prioridad, usuario_creador) VALUES (?, ?, ?, ?)',
+            'INSERT INTO tickets (tipo, descripcion, prioridad, usuario_creador, fecha_creacion) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
             (tipo, descripcion, prioridad, usuario_creador)
         )
         conn.commit()
@@ -133,6 +134,7 @@ def create_ticket():
         return redirect(url_for('tickets'))
 
     return render_template('create_ticket.html')
+
 
 
 # Ruta para ver un ticket específico

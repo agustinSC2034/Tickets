@@ -15,7 +15,7 @@
 </header>
 
 <main class="main-container">
-    <div class="filter-bar">
+    <form action="/tickets" method="GET" class="filter-bar">
         <input type="text" id="searchInput" placeholder="Buscar tickets..." class="search-bar">
         
         <select name="estado" id="estado">
@@ -34,17 +34,20 @@
     
         <button type="submit" class="btn-filter">Filtrar</button>
         <a href="{{ url_for('export_tickets') }}" class="btn-export">📥 Exportar</a>
-    </div>
+    </form>
+    
     
 
     <table id="ticketsTable">
         <thead>
             <tr>
                 <th onclick="sortTable(0)">ID ⬍</th>
-                <th onclick="sortTable(1)">Tipo ⬍</th>
-                <th onclick="sortTable(2)">Prioridad ⬍</th>
-                <th onclick="sortTable(3)">Estado ⬍</th>
-                <th onclick="sortTable(4)">Usuario Creador ⬍</th>
+                <th onclick="sortTable(1)">Fecha de Creación ⬍</th>
+                <th onclick="sortTable(2)">Tipo ⬍</th>
+                <th onclick="sortTable(3)">Prioridad ⬍</th>
+                <th onclick="sortTable(4)">Estado ⬍</th>
+                <th onclick="sortTable(5)">Usuario Creador ⬍</th>
+                
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -53,21 +56,24 @@
             {% for ticket in tickets %}
             <tr class="ticket-row">
                 <td>{{ ticket.id }}</td>
+                <td>{{ ticket.fecha_creacion }}</td>
                 <td>{{ ticket.tipo }}</td>
                 <td>{{ ticket.prioridad }}</td>
-                <td class="estado">{{ ticket.estado }}</td>
+                <td class="estado estado-{{ ticket.estado|lower }}">{{ ticket.estado }}</td>
+
                 <td>{{ ticket.usuario_creador }}</td>
-                <td class="actions-cell">
-                    <a href="{{ url_for('view_ticket', id=ticket.id) }}" class="btn btn-view">👁 Ver</a>
+                <td>
+                    <a href="{{ url_for('view_ticket', id=ticket.id) }}" class="btn btn-view">Ver</a>
                     {% if current_user.role == 'usittel' %}
-                    <form action="/delete-ticket/{{ ticket.id }}" method="POST" class="delete-form">
-                        <button type="button" class="btn btn-delete confirm-delete">🗑 Eliminar</button>
+                    <form action="/delete-ticket/{{ ticket.id }}" method="POST">
+                        <button type="button" class="btn btn-delete confirm-delete">Eliminar</button>
                     </form>
                     {% endif %}
                 </td>
             </tr>
             {% endfor %}
         </tbody>
+        
     </table>
 
     <p id="noResultsMessage" class="no-results">No se encontraron tickets.</p>

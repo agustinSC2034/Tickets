@@ -909,3 +909,88 @@ th, td {
 .filter-bar .btn-export:hover {
     background: #138496;
 }
+
+/* Fila de filtros y búsqueda compacta */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 15px 0;
+    flex-wrap: nowrap;
+}
+
+.filter-bar input,
+.filter-bar select,
+.filter-bar button,
+.filter-bar a {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* Ajustes para que la barra de búsqueda no sea tan ancha */
+.search-bar {
+    flex: 1;
+    min-width: 220px;
+}
+
+/* Tamaño uniforme para los selects */
+.filter-bar select {
+    width: 130px;
+}
+
+/* Ajuste del tamaño del botón Filtrar */
+.filter-bar .btn-filter {
+    background: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    min-width: 100px;
+}
+
+.filter-bar .btn-filter:hover {
+    background: #218838;
+}
+
+/* Botón Exportar */
+.filter-bar .btn-export {
+    background: #17a2b8;
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px;
+    min-width: 100px;
+    text-align: center;
+}
+
+.filter-bar .btn-export:hover {
+    background: #138496;
+}
+
+/* Colores por estado en la tabla */
+.estado-pendiente {
+    background: #ffcc00; /* Amarillo */
+    color: black;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.estado-en-proceso {
+    background: #007bff; /* Azul */
+    color: white;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.estado-cerrado {
+    background: #dc3545; /* Rojo */
+    color: white;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
