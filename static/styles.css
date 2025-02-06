@@ -576,3 +576,40 @@ input, select, textarea {
     padding: 8px 15px;
     cursor: pointer;
 }
+
+.btn-edit {
+    background: #ffc107;
+    color: black;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.btn-edit:hover {
+    background: #e0a800;
+}
+
+.btn-suspend {
+    background: #ffa500;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.btn-suspend:hover {
+    background: #e69500;
+}
+
+.btn-activate {
+    background: #28a745;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.btn-activate:hover {
+    background: #218838;
+}

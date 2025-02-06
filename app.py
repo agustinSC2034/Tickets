@@ -519,6 +519,90 @@ def reopen_ticket(id):
     return redirect(url_for('view_ticket', id=id))
 
 
+# Ruta para editar un usuario
+@app.route('/edit-user/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_user(id):
+    if current_user.role != 'usittel':
+        flash("Acceso denegado.", "error")
+        return redirect(url_for('users'))
+
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (id,)).fetchone()
+
+    if not user:
+        conn.close()
+        flash("Usuario no encontrado.", "error")
+        return redirect(url_for('users'))
+
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        role = request.form['role']
+
+        conn.execute(
+            'UPDATE users SET username = ?, email = ?, role = ? WHERE id = ?',
+            (username, email, role, id)
+        )
+        conn.commit()
+        conn.close()
+        flash("Usuario actualizado correctamente.", "success")
+        return redirect(url_for('users'))
+
+    conn.close()
+    return render_template('edit_user.html', user=user)
+
+# Ruta para suspender un usuario
+@app.route('/suspend-user/<int:id>', methods=['POST'])
+@login_required
+def suspend_user(id):
+    if current_user.role != 'usittel':
+        flash("Acceso denegado.", "error")
+        return redirect(url_for('users'))
+
+    conn = get_db_connection()
+    conn.execute('UPDATE users SET suspended = 1 WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+
+    flash("Usuario suspendido correctamente.", "warning")
+    return redirect(url_for('users'))
+
+# Ruta para activar un usuario suspendido
+@app.route('/activate-user/<int:id>', methods=['POST'])
+@login_required
+def activate_user(id):
+    if current_user.role != 'usittel':
+        flash("Acceso denegado.", "error")
+        return redirect(url_for('users'))
+
+    conn = get_db_connection()
+    conn.execute('UPDATE users SET suspended = 0 WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+
+    flash("Usuario activado correctamente.", "success")
+    return redirect(url_for('users'))
+
+
+
+
+def add_suspended_column():
+    conn = get_db_connection()
+    try:
+        conn.execute("ALTER TABLE users ADD COLUMN suspended INTEGER DEFAULT 0;")
+        conn.commit()
+        print("Columna 'suspended' añadida con éxito.")
+    except sqlite3.OperationalError:
+        print("La columna 'suspended' ya existe.")
+    finally:
+        conn.close()
+
+# Ejecutar esta función una sola vez
+add_suspended_column()
+
+
+
 
 
 

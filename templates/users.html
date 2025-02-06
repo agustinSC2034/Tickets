@@ -9,9 +9,10 @@
     <thead>
         <tr>
             <th>ID</th>
-            <th>Nombre</th>
+            <th>Usuario</th>
             <th>Email</th>
             <th>Rol</th>
+            <th>Estado</th>
             <th>Acciones</th>
         </tr>
     </thead>
@@ -23,16 +24,33 @@
             <td>{{ user['email'] }}</td>
             <td>{{ user['role'] }}</td>
             <td>
+                {% if user['suspended'] == 1 %}
+                    <span style="color: red;">Suspendido</span>
+                {% else %}
+                    <span style="color: green;">Activo</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('edit_user', id=user['id']) }}" class="btn btn-edit">Editar</a>
                 
-                <form action="{{ url_for('delete_user', id=user['id']) }}" method="POST">
-                    <button type="button" class="btn btn-delete confirm-delete-user">Eliminar</button>
+                {% if user['suspended'] == 1 %}
+                <form action="{{ url_for('activate_user', id=user['id']) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-activate">Activar</button>
                 </form>
+                {% else %}
+                <form action="{{ url_for('suspend_user', id=user['id']) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-suspend">Suspender</button>
+                </form>
+                {% endif %}
                 
-                
+                <form action="{{ url_for('delete_user', id=user['id']) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-delete confirm-delete">Eliminar</button>
+                </form>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
 
 {% endblock %}

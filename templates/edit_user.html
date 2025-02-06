@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Usuario{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Editar Usuario</h1>
+    <form method="POST">
+        <label for="username">Nombre de Usuario:</label>
+        <input type="text" name="username" value="{{ user['username'] }}" required>
+
+        <label for="email">Correo Electrónico:</label>
+        <input type="email" name="email" value="{{ user['email'] }}" required>
+
+        <label for="role">Rol:</label>
+        <select name="role">
+            <option value="directv" {% if user['role'] == 'directv' %}selected{% endif %}>DirecTV</option>
+            <option value="usittel" {% if user['role'] == 'usittel' %}selected{% endif %}>Usittel</option>
+        </select>
+
+        <button type="submit" class="btn-action">Guardar Cambios</button>
+    </form>
+</div>
+{% endblock %}
