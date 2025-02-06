@@ -613,3 +613,56 @@ input, select, textarea {
 .btn-activate:hover {
     background: #218838;
 }
+
+
+/* Botón de suspender usuario (amarillo con letras negras) */
+.btn-suspend {
+    background-color: #ffc107; /* Amarillo */
+    color: black;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: 0.3s ease;
+}
+
+.btn-suspend:hover {
+    background-color: #e0a800; /* Amarillo oscuro */
+}
+
+/* Botón de activar usuario (verde con letras blancas) */
+.btn-activate {
+    background-color: #28a745; /* Verde */
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: 0.3s ease;
+}
+
+.btn-activate:hover {
+    background-color: #218838; /* Verde oscuro */
+}
+
+/* Botón de editar usuario (azul con letras blancas) */
+.btn-edit {
+    background-color: #007bff; /* Azul */
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: 0.3s ease;
+}
+
+.btn-edit:hover {
+    background-color: #0056b3; /* Azul oscuro */
+}
+
