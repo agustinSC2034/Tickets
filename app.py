@@ -160,37 +160,37 @@ def add_message(ticket_id):
 
     conn = get_db_connection()
     ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (ticket_id,)).fetchone()
+
+    if not ticket:
+        conn.close()
+        flash("El ticket no existe.", "error")
+        return redirect(url_for('tickets'))
+
+    # Insertar el mensaje en la base de datos
     conn.execute(
         'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
         (ticket_id, current_user.username, current_user.role, mensaje)
     )
-    conn.commit()
 
-    # Obtener email del usuario creador (si lo escribe Usittel) o de Usittel (si lo escribe Directv)
-    destinatario = None
+    # Determinar destinatarios
     if current_user.role == 'usittel':
-        destinatario = conn.execute('SELECT email FROM users WHERE username = ?', (ticket['usuario_creador'],)).fetchone()
+        destinatarios = [row['email'] for row in conn.execute("SELECT email FROM users WHERE role = 'directv'").fetchall()]
     else:
-        usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
-        destinatario = usittel_users
+        destinatarios = [row['email'] for row in conn.execute("SELECT email FROM users WHERE role = 'usittel'").fetchall()]
 
-    conn.close()
+    conn.commit()
+    conn.close()  # 🔥 CERRAMOS DESPUÉS DE OBTENER LOS DESTINATARIOS 🔥
 
-    # Enviar correo de notificación
-    if destinatario:
-        if isinstance(destinatario, list):
-            for user in destinatario:
-                send_email(user['email'], "Nuevo mensaje en el ticket",
-                           f"Se ha agregado un nuevo mensaje en el ticket #{ticket_id}:\n\n"
-                           f"{mensaje}\n\n"
-                           f"De: {current_user.username}")
-        else:
-            send_email(destinatario['email'], "Nuevo mensaje en el ticket",
-                       f"Se ha agregado un nuevo mensaje en el ticket #{ticket_id}:\n\n"
-                       f"{mensaje}\n\n"
-                       f"De: {current_user.username}")
+    # Enviar correos a todos los destinatarios
+    asunto = f"Nuevo mensaje en el Ticket #{ticket_id}"
+    mensaje_correo = f"El usuario {current_user.username} ha agregado un mensaje en el ticket #{ticket_id}:\n\n{mensaje}"
 
+    for email in destinatarios:
+        send_email(email, asunto, mensaje_correo)
+
+    flash("Mensaje enviado correctamente.", "success")
     return redirect(url_for('view_ticket', id=ticket_id))
+
 
 
 # Ruta para listar tickets
@@ -219,6 +219,7 @@ def tickets():
 
 
 
+# Actualizar tickets
 # Actualizar tickets
 @app.route('/ticket/<int:id>/update', methods=['POST'])
 @login_required
@@ -251,14 +252,20 @@ def update_ticket(id):
     # Enviar notificación de éxito
     flash(f"Estado del ticket #{id} actualizado a {nuevo_estado}.", "success")
 
-    # Notificar por correo
-    usuario_creador = ticket['usuario_creador']
-    user = conn.execute('SELECT email FROM users WHERE username = ?', (usuario_creador,)).fetchone()
+    # Notificar a la empresa opuesta al creador del ticket
+    if current_user.role == 'usittel':
+        destinatarios = [row['email'] for row in conn.execute("SELECT email FROM users WHERE role = 'directv'").fetchall()]
+    else:
+        destinatarios = [row['email'] for row in conn.execute("SELECT email FROM users WHERE role = 'usittel'").fetchall()]
+
     conn.close()
 
-    if user:
-        send_email(user['email'], "Estado de tu ticket actualizado",
-                   f"El estado de tu ticket #{id} ha cambiado a {nuevo_estado}")
+    # Enviar correo a todos los destinatarios
+    asunto = f"Estado del Ticket #{id} actualizado"
+    mensaje = f"El usuario {current_user.username} ha cambiado el estado del ticket #{id} a '{nuevo_estado}'."
+
+    for email in destinatarios:
+        send_email(email, asunto, mensaje)
 
     return redirect(url_for('view_ticket', id=id))
 
@@ -482,20 +489,21 @@ def close_ticket(id):
 
     conn.commit()
 
-    # Notificar por correo electrónico
-    usittel_users = conn.execute('SELECT email FROM users WHERE role = "usittel"').fetchall()
-    directv_users = conn.execute('SELECT email FROM users WHERE role = "directv"').fetchall()
+        # Notificar a la empresa opuesta
+    if current_user.role == 'directv':
+        destinatarios = [row['email'] for row in conn.execute("SELECT email FROM users WHERE role = 'usittel'").fetchall()]
+    else:
+        destinatarios = [row['email'] for row in conn.execute("SELECT email FROM users WHERE role = 'directv'").fetchall()]
+
     conn.close()
 
-    # Enviar correos a Usittel si Directv cierra el ticket
-    if current_user.role == 'directv':
-        for user in usittel_users:
-            send_email(user['email'], "Ticket cerrado", f"El ticket #{id} ha sido cerrado por Directv.")
+    # Enviar correo a todos los destinatarios
+    asunto = f"Ticket #{id} cerrado"
+    mensaje = f"El ticket #{id} ha sido cerrado por {current_user.username}."
 
-    # Enviar correos a Directv si Usittel cierra el ticket
-    if current_user.role == 'usittel':
-        for user in directv_users:
-            send_email(user['email'], "Ticket cerrado", f"El ticket #{id} ha sido cerrado por Usittel.")
+    for email in destinatarios:
+        send_email(email, asunto, mensaje)
+
 
     flash(f"Ticket #{id} cerrado correctamente.", "success")
     return redirect(url_for('view_ticket', id=id))
@@ -564,21 +572,34 @@ def edit_user(id):
         return redirect(url_for('users'))
 
     if request.method == 'POST':
-        username = request.form['username']
+        new_username = request.form['username']
         email = request.form['email']
         role = request.form['role']
 
+        # Guardamos el nombre anterior para actualizarlo en tickets
+        old_username = user['username']
+
+        # Actualizar datos del usuario en la tabla users
         conn.execute(
             'UPDATE users SET username = ?, email = ?, role = ? WHERE id = ?',
-            (username, email, role, id)
+            (new_username, email, role, id)
         )
+
+        # Actualizar el nombre en la tabla tickets
+        conn.execute(
+            'UPDATE tickets SET usuario_creador = ? WHERE usuario_creador = ?',
+            (new_username, old_username)
+        )
+
         conn.commit()
         conn.close()
+
         flash("Usuario actualizado correctamente.", "success")
         return redirect(url_for('users'))
 
     conn.close()
     return render_template('edit_user.html', user=user)
+
 
 # Ruta para suspender un usuario
 @app.route('/suspend_user/<int:id>', methods=['POST'])
