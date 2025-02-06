@@ -459,26 +459,23 @@ def test_notification():
 @login_required
 def reopen_ticket(id):
     if current_user.role != 'directv':
-        return "Acceso denegado: Solo Directv puede reabrir un ticket.", 403
+        flash("Acceso denegado: Solo Directv puede reabrir un ticket.", "error")
+        return redirect(url_for('tickets'))
 
     conn = get_db_connection()
     ticket = conn.execute('SELECT estado FROM tickets WHERE id = ?', (id,)).fetchone()
 
     if not ticket or ticket['estado'].lower() != 'cerrado':
-        return "El ticket no está en un estado que permita reabrirse.", 400
+        flash("El ticket no está en un estado que permita reabrirse.", "error")
+        return redirect(url_for('tickets'))
 
     # Cambiar el estado a 'pendiente'
-    conn.execute(
-        'UPDATE tickets SET estado = ? WHERE id = ?',
-        ('pendiente', id)
-    )
+    conn.execute('UPDATE tickets SET estado = ? WHERE id = ?', ('pendiente', id))
 
     # Mensaje automático en el historial
     mensaje_reapertura = f"{current_user.username} ha reabierto el ticket."
-    conn.execute(
-        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
-        (id, current_user.username, current_user.role, mensaje_reapertura)
-    )
+    conn.execute('INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
+                 (id, current_user.username, current_user.role, mensaje_reapertura))
 
     conn.commit()
     
@@ -490,8 +487,10 @@ def reopen_ticket(id):
         send_email(user['email'], "Ticket reabierto",
                    f"El ticket #{id} ha sido reabierto por Directv.")
 
-    return redirect(url_for('view_ticket', id=id))
+    # 🔥 Agregar notificación de éxito
+    flash(f"El ticket #{id} ha sido reabierto correctamente.", "success")  # Verde para éxito
 
+    return redirect(url_for('view_ticket', id=id))
 
 
 
