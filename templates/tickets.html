@@ -15,8 +15,11 @@
 </header>
 
 <main>
+    <!-- Barra de Búsqueda -->
+    <input type="text" id="searchInput" placeholder="Buscar tickets..." class="search-bar">
+
     <!-- Filtros -->
-    <form action="/tickets" method="GET" style="display: flex; align-items: center; gap: 10px;">
+    <form action="/tickets" method="GET" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
         <label for="estado">Estado:</label>
         <select name="estado" id="estado">
             <option value="">Todos</option>
@@ -34,31 +37,31 @@
         </select>
 
         <button type="submit" class="btn-filter">Filtrar</button>
+        <a href="{{ url_for('export_tickets') }}" class="btn btn-export">📥 Exportar CSV</a>
+
     </form>
 
     <table id="ticketsTable">
         <thead>
             <tr>
-                <th onclick="sortTable(0)">ID ⬍</th>
-                <th onclick="sortTable(1)">Tipo ⬍</th>
-                <th onclick="sortTable(2)">Prioridad ⬍</th>
-                <th onclick="sortTable(3)">Estado ⬍</th>
+                <th>ID</th>
+                <th>Tipo</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Usuario Creador</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             {% for ticket in tickets %}
-            <tr class="ticket-row {{ ticket.estado }}">
+            <tr class="ticket-row">
                 <td>{{ ticket.id }}</td>
                 <td>{{ ticket.tipo }}</td>
                 <td>{{ ticket.prioridad }}</td>
+                <td class="estado">{{ ticket.estado }}</td>
+                <td>{{ ticket.usuario_creador }}</td>
                 <td>
-                    <span class="estado estado-{{ ticket.estado|lower }}">
-                        {{ ticket.estado }}
-                    </span>
-                </td>
-                <td>
-                    <a href="{{ url_for('view_ticket', id=ticket.id) }}" class="btn btn-view">Ver Ticket</a>
+                    <a href="{{ url_for('view_ticket', id=ticket.id) }}" class="btn btn-view">Ver</a>
                     {% if current_user.role == 'usittel' %}
                     <form action="/delete-ticket/{{ ticket.id }}" method="POST">
                         <button type="button" class="btn btn-delete confirm-delete">Eliminar</button>
@@ -70,12 +73,30 @@
         </tbody>
     </table>
 
-    <div style="text-align: center; margin-top: 30px; display: flex; justify-content: center; gap: 2px;">
-        <button id="prevPage" class="btn-pagination">⬅ Anterior</button>
-        <span id="pageNumber" style="font-weight: bold;">Página 1</span>
-        <button id="nextPage" class="btn-pagination">Siguiente ➡</button>
-    </div>
+    <p id="noResultsMessage" style="display: none; text-align: center; color: red; font-weight: bold;">No se encontraron tickets.</p>
+
 </main>
+
+<!-- Script de Búsqueda en Vivo -->
+<script>
+    document.getElementById("searchInput").addEventListener("keyup", function() {
+        let input = this.value.toLowerCase();
+        let rows = document.querySelectorAll("#ticketsTable tbody tr");
+        let found = false;
+
+        rows.forEach(row => {
+            let text = row.textContent.toLowerCase();
+            if (text.includes(input)) {
+                row.style.display = "";
+                found = true;
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        document.getElementById("noResultsMessage").style.display = found ? "none" : "block";
+    });
+</script>
 
 <script>
     function confirmarAccion(mensaje) {

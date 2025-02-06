@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 import csv
+import io
 from flask import Response
 from werkzeug.security import check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -403,18 +404,34 @@ def logout():
 
 # Exportar tickets
 @app.route('/export-tickets', methods=['GET'])
+@login_required
 def export_tickets():
-    import io
     conn = get_db_connection()
-    tickets = conn.execute('SELECT * FROM tickets').fetchall()
+    
+    estado = request.args.get('estado')
+    prioridad = request.args.get('prioridad')
+
+    query = 'SELECT * FROM tickets WHERE 1=1'
+    params = []
+
+    if estado in ['pendiente', 'en proceso', 'cerrado']:
+        query += ' AND estado = ?'
+        params.append(estado)
+
+    if prioridad in ['Baja', 'Media', 'Alta']:
+        query += ' AND prioridad = ?'
+        params.append(prioridad)
+
+    tickets = conn.execute(query, params).fetchall()
     conn.close()
 
-    # Crear el archivo CSV en memoria
+    # Crear archivo CSV en memoria
     output = io.StringIO()
-    writer = csv.writer(output, quoting=csv.QUOTE_MINIMAL)
+    writer = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+
 
     # Escribir encabezados
-    writer.writerow(["ID", "Tipo", "Descripción", "Prioridad", "Estado", "Fecha de creación", "Usuario creador", "Usuario asignado", "Notas"])
+    writer.writerow(["ID", "Tipo", "Descripción", "Prioridad", "Estado", "Fecha de creación", "Usuario creador"])
 
     # Escribir los datos de los tickets
     for ticket in tickets:
@@ -425,18 +442,20 @@ def export_tickets():
             ticket['prioridad'],
             ticket['estado'],
             ticket['fecha_creacion'],
-            ticket['usuario_creador'],
-            ticket['usuario_asignado'] if ticket['usuario_asignado'] else "",
-            ticket['notas'].replace("\n", " ") if ticket['notas'] else ""
+            ticket['usuario_creador']
         ])
 
-    # Convertir el CSV a bytes con codificación UTF-8
     response = Response(output.getvalue().encode('utf-8-sig'), mimetype='text/csv; charset=utf-8')
     response.headers.set('Content-Disposition', 'attachment', filename='tickets.csv')
+    
     return response
 
 
 
+
+
+
+# Ruta para cerrar un ticket
 @app.route('/ticket/<int:id>/close', methods=['POST'])
 @login_required
 def close_ticket(id):
