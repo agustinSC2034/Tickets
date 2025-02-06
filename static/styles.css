@@ -287,31 +287,50 @@ td {
 
 /* Botones */
 .btn {
-    padding: 6px 12px;
+    padding: 6px 10px;
     border: none;
     cursor: pointer;
     font-size: 14px;
     border-radius: 5px;
     text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
 }
 
 .btn-view {
-    background: #28a745;
+    background: #007bff;
     color: white;
 }
 
 .btn-view:hover {
-    background: #218838;
+    background: #0056b3;
 }
 
 .btn-delete {
     background: #dc3545;
     color: white;
-    margin-left: 10px;
 }
 
 .btn-delete:hover {
     background: #c82333;
+}
+
+.btn-filter {
+    background: #28a745;
+    color: white;
+}
+
+.btn-filter:hover {
+    background: #218838;
+}
+
+.btn-export {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-export:hover {
+    background: #138496;
 }
 
 /* Estilizar botón de filtrado */
@@ -679,5 +698,214 @@ input, select, textarea {
 }
 
 .btn-export:hover {
+    background: #138496;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #363637;
+    color: white;
+    border-bottom: 3px solid #007bff;
+}
+
+.header-container h1 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 12px;
+    background: #007bff;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+.nav-links a:hover {
+    background: #0056b3;
+}
+
+.btn-logout {
+    background: #ff4d4d !important;
+}
+
+.btn-logout:hover {
+    background: #cc0000 !important;
+}
+
+
+.main-container {
+    padding: 20px;
+    max-width: 95%;
+    margin: auto;
+}
+
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.filter-container select {
+    padding: 5px;
+}
+
+.search-bar {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Estilo para la tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Mejor formato de acciones */
+.actions-cell {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.delete-form {
+    display: inline;
+}
+
+.no-results {
+    display: none;
+    text-align: center;
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.btn {
+    padding: 6px 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.btn-view {
+    background: #007bff;
+    color: white;
+}
+
+.btn-view:hover {
+    background: #0056b3;
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+}
+
+.btn-filter {
+    background: #28a745;
+    color: white;
+}
+
+.btn-filter:hover {
+    background: #218838;
+}
+
+.btn-export {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-export:hover {
+    background: #138496;
+}
+
+
+
+/* Fila de filtros y búsqueda compacta */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.filter-bar input,
+.filter-bar select,
+.filter-bar button,
+.filter-bar a {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* Ajustes para que la barra de búsqueda no sea tan ancha */
+.search-bar {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Botones y select con tamaño uniforme */
+.filter-bar select {
+    width: 120px;
+}
+
+.filter-bar .btn-filter {
+    background: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.filter-bar .btn-filter:hover {
+    background: #218838;
+}
+
+.filter-bar .btn-export {
+    background: #17a2b8;
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px;
+}
+
+.filter-bar .btn-export:hover {
     background: #138496;
 }

@@ -4,54 +4,51 @@
 
 {% block content %}
 
-<header>
+<header class="header-container">
     <h1>Lista de Tickets</h1>
-    <nav>
-        <a href="/logout">Cerrar sesión</a>
+    <nav class="nav-links">
+        <a href="/logout" class="btn-logout">Cerrar sesión</a>
         {% if current_user.role != 'usittel' %}
-        <a href="{{ url_for('create_ticket') }}">Crear Ticket</a>
+        <a href="{{ url_for('create_ticket') }}" class="btn-create">+ Crear Ticket</a>
         {% endif %}
     </nav>
 </header>
 
-<main>
-    <!-- Barra de Búsqueda -->
-    <input type="text" id="searchInput" placeholder="Buscar tickets..." class="search-bar">
-
-    <!-- Filtros -->
-    <form action="/tickets" method="GET" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-        <label for="estado">Estado:</label>
+<main class="main-container">
+    <div class="filter-bar">
+        <input type="text" id="searchInput" placeholder="Buscar tickets..." class="search-bar">
+        
         <select name="estado" id="estado">
-            <option value="">Todos</option>
+            <option value="">Estado</option>
             <option value="pendiente">Pendiente</option>
             <option value="en proceso">En proceso</option>
             <option value="cerrado">Cerrado</option>
         </select>
-
-        <label for="prioridad">Prioridad:</label>
+    
         <select name="prioridad" id="prioridad">
-            <option value="">Todas</option>
+            <option value="">Prioridad</option>
             <option value="Baja">Baja</option>
             <option value="Media">Media</option>
             <option value="Alta">Alta</option>
         </select>
-
+    
         <button type="submit" class="btn-filter">Filtrar</button>
-        <a href="{{ url_for('export_tickets') }}" class="btn btn-export">📥 Exportar CSV</a>
-
-    </form>
+        <a href="{{ url_for('export_tickets') }}" class="btn-export">📥 Exportar</a>
+    </div>
+    
 
     <table id="ticketsTable">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Tipo</th>
-                <th>Prioridad</th>
-                <th>Estado</th>
-                <th>Usuario Creador</th>
+                <th onclick="sortTable(0)">ID ⬍</th>
+                <th onclick="sortTable(1)">Tipo ⬍</th>
+                <th onclick="sortTable(2)">Prioridad ⬍</th>
+                <th onclick="sortTable(3)">Estado ⬍</th>
+                <th onclick="sortTable(4)">Usuario Creador ⬍</th>
                 <th>Acciones</th>
             </tr>
         </thead>
+        
         <tbody>
             {% for ticket in tickets %}
             <tr class="ticket-row">
@@ -60,11 +57,11 @@
                 <td>{{ ticket.prioridad }}</td>
                 <td class="estado">{{ ticket.estado }}</td>
                 <td>{{ ticket.usuario_creador }}</td>
-                <td>
-                    <a href="{{ url_for('view_ticket', id=ticket.id) }}" class="btn btn-view">Ver</a>
+                <td class="actions-cell">
+                    <a href="{{ url_for('view_ticket', id=ticket.id) }}" class="btn btn-view">👁 Ver</a>
                     {% if current_user.role == 'usittel' %}
-                    <form action="/delete-ticket/{{ ticket.id }}" method="POST">
-                        <button type="button" class="btn btn-delete confirm-delete">Eliminar</button>
+                    <form action="/delete-ticket/{{ ticket.id }}" method="POST" class="delete-form">
+                        <button type="button" class="btn btn-delete confirm-delete">🗑 Eliminar</button>
                     </form>
                     {% endif %}
                 </td>
@@ -73,8 +70,7 @@
         </tbody>
     </table>
 
-    <p id="noResultsMessage" style="display: none; text-align: center; color: red; font-weight: bold;">No se encontraron tickets.</p>
-
+    <p id="noResultsMessage" class="no-results">No se encontraron tickets.</p>
 </main>
 
 <!-- Script de Búsqueda en Vivo -->
@@ -97,15 +93,11 @@
         document.getElementById("noResultsMessage").style.display = found ? "none" : "block";
     });
 </script>
-
 <script>
-    function confirmarAccion(mensaje) {
-        return confirm(mensaje);
-    }
-
     function sortTable(columnIndex) {
         let table = document.getElementById("ticketsTable");
-        let rows = Array.from(table.rows).slice(1);
+        let tbody = table.getElementsByTagName("tbody")[0];
+        let rows = Array.from(tbody.getElementsByTagName("tr"));
         let isAscending = table.rows[0].cells[columnIndex].getAttribute("data-order") === "asc";
 
         rows.sort((rowA, rowB) => {
@@ -116,35 +108,10 @@
 
         table.rows[0].cells[columnIndex].setAttribute("data-order", isAscending ? "desc" : "asc");
 
-        rows.forEach(row => table.appendChild(row));
+        tbody.innerHTML = "";
+        rows.forEach(row => tbody.appendChild(row));
     }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        let table = document.getElementById("ticketsTable");
-        let rows = Array.from(table.getElementsByTagName("tbody")[0].rows);
-        let rowsPerPage = 5;
-        let currentPage = 1;
-
-        function showPage(page) {
-            let start = (page - 1) * rowsPerPage;
-            let end = start + rowsPerPage;
-            rows.forEach((row, index) => {
-                row.style.display = index >= start && index < end ? "" : "none";
-            });
-            document.getElementById("pageNumber").textContent = `Página ${page}`;
-        }
-
-        function changePage(delta) {
-            let totalPages = Math.ceil(rows.length / rowsPerPage);
-            currentPage = Math.min(Math.max(1, currentPage + delta), totalPages);
-            showPage(currentPage);
-        }
-
-        document.getElementById("prevPage").addEventListener("click", () => changePage(-1));
-        document.getElementById("nextPage").addEventListener("click", () => changePage(1));
-
-        showPage(currentPage);
-    });
 </script>
+
 
 {% endblock %}
