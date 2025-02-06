@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,72 +12,74 @@
     <header>
         {% include 'header.html' %}
     </header>
-    
+
     <div class="container">
         <!-- Notificaciones Flash -->
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="toast-container">
-                    {% for category, message in messages %}
-                        <div class="toast toast-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+        {% if messages %}
+        <div class="toast-container">
+            {% for category, message in messages %}
+            <div class="toast toast-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% endwith %}
-    
+
         {% block content %}{% endblock %}
     </div>
 
-<!-- Modal de Confirmación Universal -->
-<div id="confirmModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-        <p id="confirmMessage">¿Estás seguro de realizar esta acción?</p>
-        <div class="modal-actions">
-            <button id="cancelButton" class="btn-cancel">Cancelar</button>
-            <button id="confirmButton" class="btn-confirm">Confirmar</button>
+    <!-- Modal de Confirmación Universal -->
+    <div id="confirmModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <p id="confirmMessage">¿Estás seguro de realizar esta acción?</p>
+            <div class="modal-actions">
+                <button id="cancelButton" class="btn-cancel">Cancelar</button>
+                <button id="confirmButton" class="btn-confirm">Confirmar</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Script para manejar el modal -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const modal = document.getElementById("confirmModal");
-        const confirmMessage = document.getElementById("confirmMessage");
-        const confirmButton = document.getElementById("confirmButton");
-        const cancelButton = document.getElementById("cancelButton");
-        let formToSubmit = null;
+    <!-- Script para manejar el modal -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const modal = document.getElementById("confirmModal");
+            const confirmMessage = document.getElementById("confirmMessage");
+            const confirmButton = document.getElementById("confirmButton");
+            const cancelButton = document.getElementById("cancelButton");
+            let formToSubmit = null;
 
-        function setupModal(buttonClass, message) {
-            document.querySelectorAll(buttonClass).forEach(button => {
+            document.querySelectorAll(".confirm-delete, .confirm-delete-user, .confirm-update-status, .confirm-close-ticket, .confirm-reopen-ticket").forEach(button => {
                 button.addEventListener("click", function (event) {
                     event.preventDefault();
-                    confirmMessage.textContent = message;
+                    if (this.classList.contains("confirm-delete-user")) {
+                        confirmMessage.textContent = "¿Seguro que deseas eliminar este usuario?";
+                    } else if (this.classList.contains("confirm-update-status")) {
+                        confirmMessage.textContent = "¿Seguro que deseas actualizar el estado del ticket?";
+                    } else if (this.classList.contains("confirm-close-ticket")) {
+                        confirmMessage.textContent = "¿Seguro que deseas cerrar este ticket?";
+                    } else if (this.classList.contains("confirm-reopen-ticket")) {
+                        confirmMessage.textContent = "¿Seguro que deseas reabrir este ticket?";
+                    } else {
+                        confirmMessage.textContent = "¿Seguro que deseas eliminar este ticket?";
+                    }
                     formToSubmit = this.closest("form");
                     modal.style.display = "flex";
                 });
             });
-        }
 
-        setupModal(".confirm-delete", "¿Seguro que deseas eliminar este ticket?");
-        setupModal(".confirm-close", "¿Seguro que deseas cerrar este ticket?");
-        setupModal(".confirm-reopen", "¿Seguro que deseas reabrir este ticket?");
-        setupModal(".confirm-update", "¿Seguro que deseas actualizar el estado de este ticket?");
+            cancelButton.addEventListener("click", function () {
+                modal.style.display = "none";
+            });
 
-        cancelButton.addEventListener("click", function () {
-            modal.style.display = "none";
+            confirmButton.addEventListener("click", function () {
+                if (formToSubmit) {
+                    formToSubmit.submit();
+                }
+                modal.style.display = "none";
+            });
         });
+    </script>
 
-        confirmButton.addEventListener("click", function () {
-            if (formToSubmit) {
-                formToSubmit.submit();
-            }
-            modal.style.display = "none";
-        });
-    });
-</script>
-
-    
     <script>
         // Auto cerrar las notificaciones después de 3 segundos
         setTimeout(() => {
@@ -86,6 +89,7 @@
             });
         }, 3000);
     </script>
-    
+
 </body>
+
 </html>

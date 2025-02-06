@@ -257,7 +257,20 @@ def update_ticket(id):
     return redirect(url_for('view_ticket', id=id))
 
 
+@app.route('/delete-user/<int:id>', methods=['POST'])
+@login_required
+def delete_user(id):
+    if current_user.role != 'usittel':
+        flash("Acceso denegado.", "error")
+        return redirect(url_for('users'))
 
+    conn = get_db_connection()
+    conn.execute('DELETE FROM users WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+
+    flash("Usuario eliminado correctamente.", "success")
+    return redirect(url_for('users'))
 
 
 
@@ -326,6 +339,19 @@ def add_note(id):
         conn.close()
 
     return f"Nota agregada exitosamente. <a href='/ticket/{id}'>Volver al ticket</a>"
+
+@app.route('/users')
+@login_required
+def users():
+    if current_user.role != 'usittel':
+        flash("Acceso denegado.", "error")
+        return redirect(url_for('tickets'))
+
+    conn = get_db_connection()
+    users = conn.execute('SELECT id, username, email, role FROM users').fetchall()
+    conn.close()
+
+    return render_template('users.html', users=users)
 
 
 @app.route('/register', methods=['GET', 'POST'])

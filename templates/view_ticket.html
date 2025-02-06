@@ -50,15 +50,17 @@
         <!-- Botón para cerrar ticket -->
         {% if current_user.role == 'directv' and ticket.estado != 'cerrado' %}
         <form action="{{ url_for('close_ticket', id=ticket.id) }}" method="POST">
-            <button type="button" class="btn-close confirm-close">Cerrar Ticket</button>
+            <button type="button" class="btn-close confirm-close-ticket">Cerrar Ticket</button>
         </form>
+
         {% endif %}
 
         <!-- Botón para reabrir ticket -->
         {% if current_user.role == 'directv' and ticket.estado == 'cerrado' %}
         <form method="POST" action="{{ url_for('reopen_ticket', id=ticket.id) }}">
-            <button type="button" class="btn-reopen confirm-reopen">Reabrir Ticket</button>
+            <button type="button" class="btn-reopen confirm-reopen-ticket">Reabrir Ticket</button>
         </form>
+        
         {% endif %}
 
         <!-- Botón para actualizar estado -->
@@ -70,7 +72,7 @@
                 <option value="en proceso" {% if ticket.estado=='en proceso' %}selected{% endif %}>En proceso</option>
                 <option value="cerrado" {% if ticket.estado=='cerrado' %}selected{% endif %}>Cerrado</option>
             </select>
-            <button type="button" class="btn-action confirm-update">Actualizar</button>
+            <button type="button" class="btn-action confirm-update-status">Actualizar</button>
         </form>
         {% endif %}
     </div>
