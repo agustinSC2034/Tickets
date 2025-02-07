@@ -165,6 +165,11 @@ button:hover {
     align-items: center;
 }
 
+/* Agregar margen superior al contenedor principal */
+.container {
+    margin-top: 80px; /* Ajustar según la altura del header */
+}
+
 .logo-text{
     color: white;
 }

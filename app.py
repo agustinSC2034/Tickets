@@ -213,11 +213,14 @@ def tickets():
         query += ' AND prioridad = ?'
         params.append(prioridad)
 
+    query += ' ORDER BY fecha_creacion DESC'  # Ordenar por fecha de creación (más nuevos arriba)
+
     conn = get_db_connection()
     tickets = conn.execute(query, params).fetchall()
     conn.close()
 
     return render_template('tickets.html', tickets=tickets, estado=estado, prioridad=prioridad)
+
 
 
 

@@ -4,15 +4,7 @@
 
 {% block content %}
 
-<header class="header-container">
-    <h1>Lista de Tickets</h1>
-    <nav class="nav-links">
-        <a href="/logout" class="btn-logout">Cerrar sesión</a>
-        {% if current_user.role != 'usittel' %}
-        <a href="{{ url_for('create_ticket') }}" class="btn-create">+ Crear Ticket</a>
-        {% endif %}
-    </nav>
-</header>
+
 
 <main class="main-container">
     <form action="/tickets" method="GET" class="filter-bar">
