@@ -1,19 +1,25 @@
 {% extends "base.html" %}
 
+{% block title %}Detalles del Ticket #{{ ticket['id'] }}{% endblock %}
+
 {% block content %}
-<!-- Contenido específico de la página -->
-<h1>Detalles del Ticket #{{ ticket['id'] }}</h1>
-<nav>
-    <a href="/tickets" class="btn-back">Volver a la lista de tickets</a>
-</nav>
 
-<div style="margin: 3%">
+<!-- Contenedor principal -->
+<div class="container-ticket">
+    <!-- Header del ticket -->
+    <header class="ticket-header">
+        <h1>Detalles del Ticket #{{ ticket['id'] }}</h1>
+        <a href="/tickets" class="btn-back">← Volver a la lista</a>
+    </header>
 
-    <div class="ticket-details">
+    <!-- Información del Ticket -->
+    <div class="ticket-info">
         <p><strong>Tipo:</strong> {{ ticket['tipo'] }}</p>
         <p><strong>Descripción:</strong> {{ ticket['descripcion'] }}</p>
         <p><strong>Prioridad:</strong> {{ ticket['prioridad'] }}</p>
-        <p><strong>Estado:</strong> <span class="estado-{{ ticket['estado']|lower }}">{{ ticket['estado'] }}</span></p>
+        <p><strong>Estado:</strong> 
+            <span class="estado estado-{{ ticket['estado']|lower }}">{{ ticket['estado'] }}</span>
+        </p>
         <p><strong>Usuario Creador:</strong> {{ ticket['usuario_creador'] }}</p>
         {% if ticket['usuario_asignado'] %}
         <p><strong>Usuario Asignado:</strong> {{ ticket['usuario_asignado'] }}</p>
@@ -25,8 +31,7 @@
     <div class="chat-container">
         {% for message in messages %}
         <div class="message {% if message['rol'] == 'usittel' %}usittel-message{% else %}directv-message{% endif %}">
-            <p class="message-user"><strong>{{ message['usuario'] }} ({{ message['rol'] }})</strong> - {{
-                message['fecha'] }}</p>
+            <p class="message-user"><strong>{{ message['usuario'] }} ({{ message['rol'] }})</strong> - {{ message['fecha'] }}</p>
             <p class="message-text">{{ message['mensaje'] }}</p>
         </div>
         {% endfor %}
@@ -37,7 +42,7 @@
     <div class="message-form">
         <h2>Agregar Mensaje</h2>
         <form method="POST" action="{{ url_for('add_message', ticket_id=ticket['id']) }}">
-            <textarea name="mensaje" rows="6" required></textarea><br>
+            <textarea name="mensaje" rows="4" required placeholder="Escribe tu mensaje aquí..."></textarea><br>
             <button type="submit" class="btn-action">Enviar</button>
         </form>
     </div>
@@ -47,23 +52,18 @@
 
     <!-- Contenedor de acciones -->
     <div class="actions-container">
-        <!-- Botón para cerrar ticket -->
         {% if current_user.role == 'directv' and ticket.estado != 'cerrado' %}
         <form action="{{ url_for('close_ticket', id=ticket.id) }}" method="POST">
             <button type="button" class="btn-close confirm-close-ticket">Cerrar Ticket</button>
         </form>
-
         {% endif %}
 
-        <!-- Botón para reabrir ticket -->
         {% if current_user.role == 'directv' and ticket.estado == 'cerrado' %}
         <form method="POST" action="{{ url_for('reopen_ticket', id=ticket.id) }}">
             <button type="button" class="btn-reopen confirm-reopen-ticket">Reabrir Ticket</button>
         </form>
-        
         {% endif %}
 
-        <!-- Botón para actualizar estado -->
         {% if current_user.role == 'usittel' and ticket.estado != 'cerrado' %}
         <form action="{{ url_for('update_ticket', id=ticket.id) }}" method="POST">
             <label for="estado">Actualizar Estado:</label>
@@ -77,4 +77,5 @@
         {% endif %}
     </div>
 </div>
+
 {% endblock %}
