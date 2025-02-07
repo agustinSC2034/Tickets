@@ -13,7 +13,7 @@
     </header>
 
     <!-- Información del Ticket -->
-    <div class="ticket-info">
+    <section class="ticket-info">
         <div class="ticket-details">
             <p><strong>Tipo:</strong> {{ ticket['tipo'] }}</p>
             <p><strong>Descripción:</strong> {{ ticket['descripcion'] }}</p>
@@ -26,21 +26,19 @@
             <p><strong>Usuario Asignado:</strong> {{ ticket['usuario_asignado'] }}</p>
             {% endif %}
         </div>
-    </div>
+    </section>
 
-    <!-- Mensajes estilo chat -->
-    <div class="chat-section">
+    <!-- Sección de conversación -->
+    <section class="chat-section">
         <h2>Conversación</h2>
         <div class="chat-container">
             {% for message in messages %}
-            <div class="message-box {% if message['rol'] == 'usittel' %}usittel-message{% else %}directv-message{% endif %}">
+            <div class="message-card">
                 <div class="message-header">
                     <span class="message-user">{{ message['usuario'] }} ({{ message['rol'] }})</span>
                     <span class="message-date">{{ message['fecha'] }}</span>
                 </div>
                 <p class="message-text">{{ message['mensaje'] }}</p>
-
-                <!-- Mostrar archivo adjunto si existe -->
                 {% if message['archivo_adjunto'] %}
                 <p class="message-attachment">
                     📎 <a href="{{ url_for('download_file', filename=message['archivo_adjunto']) }}" target="_blank">
@@ -51,24 +49,24 @@
             </div>
             {% endfor %}
         </div>
-    </div>
+    </section>
 
     <!-- Formulario para agregar mensajes con archivos adjuntos -->
     {% if ticket['estado'].lower() != 'cerrado' %}
-    <div class="message-form">
+    <section class="message-form">
         <h2>Enviar mensaje</h2>
         <form method="POST" action="{{ url_for('add_message', ticket_id=ticket['id']) }}" enctype="multipart/form-data">
             <textarea name="mensaje" rows="3" required placeholder="Escribe tu mensaje aquí..."></textarea>
             <input type="file" name="archivo">
             <button type="submit" class="btn-action">Enviar</button>
         </form>
-    </div>
+    </section>
     {% else %}
     <p class="closed-ticket-message"><strong>Este ticket está cerrado y no se pueden agregar mensajes.</strong></p>
     {% endif %}
 
     <!-- Contenedor de acciones -->
-    <div class="actions-container">
+    <section class="actions-container">
         {% if current_user.role == 'directv' and ticket.estado != 'cerrado' %}
         <form action="{{ url_for('close_ticket', id=ticket.id) }}" method="POST">
             <button type="button" class="btn-close confirm-close-ticket">Cerrar Ticket</button>
@@ -92,7 +90,7 @@
             <button type="button" class="btn-action confirm-update-status">Actualizar</button>
         </form>
         {% endif %}
-    </div>
+    </section>
 </div>
 
 {% endblock %}
