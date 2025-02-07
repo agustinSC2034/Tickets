@@ -14,35 +14,52 @@
 
     <!-- Información del Ticket -->
     <div class="ticket-info">
-        <p><strong>Tipo:</strong> {{ ticket['tipo'] }}</p>
-        <p><strong>Descripción:</strong> {{ ticket['descripcion'] }}</p>
-        <p><strong>Prioridad:</strong> {{ ticket['prioridad'] }}</p>
-        <p><strong>Estado:</strong> 
-            <span class="estado estado-{{ ticket['estado']|lower }}">{{ ticket['estado'] }}</span>
-        </p>
-        <p><strong>Usuario Creador:</strong> {{ ticket['usuario_creador'] }}</p>
-        {% if ticket['usuario_asignado'] %}
-        <p><strong>Usuario Asignado:</strong> {{ ticket['usuario_asignado'] }}</p>
-        {% endif %}
+        <div class="ticket-details">
+            <p><strong>Tipo:</strong> {{ ticket['tipo'] }}</p>
+            <p><strong>Descripción:</strong> {{ ticket['descripcion'] }}</p>
+            <p><strong>Prioridad:</strong> {{ ticket['prioridad'] }}</p>
+            <p><strong>Estado:</strong> 
+                <span class="estado estado-{{ ticket['estado']|lower }}">{{ ticket['estado'] }}</span>
+            </p>
+            <p><strong>Usuario Creador:</strong> {{ ticket['usuario_creador'] }}</p>
+            {% if ticket['usuario_asignado'] %}
+            <p><strong>Usuario Asignado:</strong> {{ ticket['usuario_asignado'] }}</p>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Mensajes estilo chat -->
-    <h2>Mensajes</h2>
-    <div class="chat-container">
-        {% for message in messages %}
-        <div class="message {% if message['rol'] == 'usittel' %}usittel-message{% else %}directv-message{% endif %}">
-            <p class="message-user"><strong>{{ message['usuario'] }} ({{ message['rol'] }})</strong> - {{ message['fecha'] }}</p>
-            <p class="message-text">{{ message['mensaje'] }}</p>
+    <div class="chat-section">
+        <h2>Conversación</h2>
+        <div class="chat-container">
+            {% for message in messages %}
+            <div class="message-box {% if message['rol'] == 'usittel' %}usittel-message{% else %}directv-message{% endif %}">
+                <div class="message-header">
+                    <span class="message-user">{{ message['usuario'] }} ({{ message['rol'] }})</span>
+                    <span class="message-date">{{ message['fecha'] }}</span>
+                </div>
+                <p class="message-text">{{ message['mensaje'] }}</p>
+
+                <!-- Mostrar archivo adjunto si existe -->
+                {% if message['archivo_adjunto'] %}
+                <p class="message-attachment">
+                    📎 <a href="{{ url_for('download_file', filename=message['archivo_adjunto']) }}" target="_blank">
+                        Ver archivo adjunto
+                    </a>
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 
-    <!-- Formulario para agregar mensajes -->
+    <!-- Formulario para agregar mensajes con archivos adjuntos -->
     {% if ticket['estado'].lower() != 'cerrado' %}
     <div class="message-form">
-        <h2>Agregar Mensaje</h2>
-        <form method="POST" action="{{ url_for('add_message', ticket_id=ticket['id']) }}">
-            <textarea name="mensaje" rows="4" required placeholder="Escribe tu mensaje aquí..."></textarea><br>
+        <h2>Enviar mensaje</h2>
+        <form method="POST" action="{{ url_for('add_message', ticket_id=ticket['id']) }}" enctype="multipart/form-data">
+            <textarea name="mensaje" rows="3" required placeholder="Escribe tu mensaje aquí..."></textarea>
+            <input type="file" name="archivo">
             <button type="submit" class="btn-action">Enviar</button>
         </form>
     </div>

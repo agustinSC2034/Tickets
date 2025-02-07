@@ -6,12 +6,8 @@ from flask import Response
 from werkzeug.security import check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from flask import send_from_directory
 from flask_mail import Mail, Message
-
-
-
-
 
 # Conexión a la base de datos
 def get_db_connection():
@@ -152,13 +148,26 @@ def view_ticket(id):
     return render_template('view_ticket.html', ticket=ticket, messages=messages, current_user=current_user)
 
 # Ruta para agregar un mensaje a un ticket
+import os
+from werkzeug.utils import secure_filename
+
+# Configurar carpeta de almacenamiento
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Verificar si el archivo es válido
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Modificar la función de agregar mensajes
 @app.route('/add_message/<int:ticket_id>', methods=['POST'])
 @login_required
 def add_message(ticket_id):
     mensaje = request.form.get('mensaje')
-
-    if not mensaje:
-        return "Error: El mensaje no puede estar vacío.", 400
+    archivo = request.files.get('archivo')
+    archivo_nombre = None
 
     conn = get_db_connection()
     ticket = conn.execute('SELECT * FROM tickets WHERE id = ?', (ticket_id,)).fetchone()
@@ -168,22 +177,27 @@ def add_message(ticket_id):
         flash("El ticket no existe.", "error")
         return redirect(url_for('tickets'))
 
-    # Insertar el mensaje en la base de datos
-    conn.execute(
-        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, fecha) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
-        (ticket_id, current_user.username, current_user.role, mensaje)
-    )
+    # Guardar archivo si se sube uno válido
+    if archivo and allowed_file(archivo.filename):
+        archivo_nombre = secure_filename(archivo.filename)
+        archivo.save(os.path.join(app.config['UPLOAD_FOLDER'], archivo_nombre))
 
-    # Determinar destinatarios
+    # Insertar el mensaje en la base de datos con el archivo adjunto
+    conn.execute(
+        'INSERT INTO messages (ticket_id, usuario, rol, mensaje, archivo_adjunto, fecha) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
+        (ticket_id, current_user.username, current_user.role, mensaje, archivo_nombre)
+    )
+    conn.commit()
+
+    # Notificar a la otra empresa
     if current_user.role == 'usittel':
         destinatarios = [row['email'] for row in conn.execute("SELECT email FROM users WHERE role = 'directv'").fetchall()]
     else:
         destinatarios = [row['email'] for row in conn.execute("SELECT email FROM users WHERE role = 'usittel'").fetchall()]
 
-    conn.commit()
-    conn.close()  # 🔥 CERRAMOS DESPUÉS DE OBTENER LOS DESTINATARIOS 🔥
+    conn.close()
 
-    # Enviar correos a todos los destinatarios
+    # Enviar correo a todos los destinatarios
     asunto = f"Nuevo mensaje en el Ticket #{ticket_id}"
     mensaje_correo = f"El usuario {current_user.username} ha agregado un mensaje en el ticket #{ticket_id}:\n\n{mensaje}"
 
@@ -192,6 +206,7 @@ def add_message(ticket_id):
 
     flash("Mensaje enviado correctamente.", "success")
     return redirect(url_for('view_ticket', id=ticket_id))
+
 
 
 
@@ -649,9 +664,24 @@ def activate_user(id):
 
 
 
+from flask import send_from_directory
 
 
 
+# Configurar carpeta de almacenamiento
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Crear la carpeta 'uploads' si no existe
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+
+@app.route('/uploads/<filename>')
+def download_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 def send_email(to, subject, message):
@@ -662,8 +692,6 @@ def send_email(to, subject, message):
         print(f"Correo enviado a {to}: {subject}")
     except Exception as e:
         print(f"Error al enviar correo: {e}")
-
-
 
 
 if __name__ == '__main__':

@@ -350,11 +350,6 @@ td {
     background-color: #0056b3;
 }
 
-/* Estilo del texto del mensaje */
-.message-text {
-    font-size: 14px;
-}
-
 /* Estilo de los mensajes */
 .message {
     padding: 12px;
@@ -750,101 +745,12 @@ th, td {
     background: #138496;
 }
 
-/* Contenedor principal */
-.container-ticket {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Header del ticket */
-.ticket-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-/* Información del ticket */
-.ticket-info {
-    padding: 15px;
-    background: #f9f9f9;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
 
 /* Estados de los tickets */
 .estado {
     font-weight: bold;
     padding: 5px 10px;
     border-radius: 5px;
-}
-
-.estado-pendiente {
-    background: #ffcc00;
-    color: black;
-}
-
-.estado-en-proceso {
-    background: #007bff;
-    color: white;
-}
-
-.estado-cerrado {
-    background: #dc3545;
-    color: white;
-}
-
-/* Chat */
-.chat-container {
-    background: #ffffff;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-/* Mensajes diferenciados */
-.usittel-message {
-    background: #007bff;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-    margin: 5px 0;
-    text-align: left;
-}
-
-.directv-message {
-    background: #28a745;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-    margin: 5px 0;
-    text-align: right;
-}
-
-/* Formulario de mensajes */
-.message-form {
-    padding: 15px;
-    background: #f1f1f1;
-    border-radius: 8px;
-    margin-top: 20px;
-}
-
-.message-form textarea {
-    width: 100%;
-    border-radius: 5px;
-}
-
-/* Contenedor de acciones */
-.actions-container {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
 }
 
 /* Botones */
@@ -894,3 +800,134 @@ th, td {
     border-radius: 5px;
 }
 
+/* Contenedor principal */
+.container-ticket {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Información del ticket */
+.ticket-info {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* Estados */
+.estado {
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.estado-pendiente {
+    background: #ffcc00;
+    color: black;
+}
+
+.estado-en-proceso {
+    background: #007bff;
+    color: white;
+}
+
+.estado-cerrado {
+    background: #dc3545;
+    color: white;
+}
+
+/* Chat */
+.chat-section {
+    margin-top: 20px;
+}
+
+.chat-container {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Mensajes */
+.message-box {
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.usittel-message {
+    background: #007bff;
+    color: white;
+    border-radius: 10px 10px 0 10px;
+}
+
+.directv-message {
+    background: #28a745;
+    color: white;
+    border-radius: 10px 10px 10px 0;
+}
+
+.message-text {
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+/* Formulario */
+.message-form {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f1f1f1;
+    border-radius: 8px;
+}
+
+.message-form textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* Acciones */
+.actions-container {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+
+
+/* Estilos para archivos adjuntos en el chat */
+.message-attachment {
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.message-attachment a {
+    color: #007bff;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.message-attachment a:hover {
+    text-decoration: underline;
+}
